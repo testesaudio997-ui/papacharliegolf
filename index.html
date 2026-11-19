@@ -50,6 +50,34 @@ h2{font-size:1.5rem;margin-bottom:18px}h2::after{content:"";display:block;width:
 .support{text-align:center;background:linear-gradient(135deg,#13213f,#0f1a30);border:1px solid var(--line);border-radius:16px;padding:36px 20px}
 .support p{color:var(--mut);margin:8px auto 18px;max-width:540px}
 footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-size:.85rem;text-align:center}
+
+.stage{position:relative;margin:26px auto 0;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(120% 120% at 15% 0%,#162a52 0%,#0a1226 60%)}
+.slide{position:absolute;inset:0;display:grid;grid-template-columns:1.1fr 1fr;gap:4%;align-items:center;padding:6% 6% 9%;text-align:left;opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s}
+.slide.on{opacity:1;visibility:visible}
+.slide h2{font-size:clamp(1.3rem,3.6vw,2.6rem);line-height:1.1;margin:0}.slide h2::after{display:none}
+.slide .sub{color:var(--mut);font-size:clamp(.8rem,1.5vw,1.05rem);margin-top:10px}
+.slide .kick{color:var(--ac);font-weight:700;font-size:clamp(.75rem,1.3vw,.95rem);margin-bottom:8px}
+.facts{display:grid;gap:clamp(6px,1.4vw,14px)}
+.fact{background:rgba(15,26,48,.85);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:10px;padding:clamp(6px,1.2vw,12px) clamp(10px,1.6vw,16px)}
+.fact b{display:block;font-size:clamp(.95rem,2.2vw,1.6rem);line-height:1.15}.fact span{color:var(--mut);font-size:clamp(.68rem,1.2vw,.88rem)}
+.stage-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(transparent,rgba(5,9,20,.9));font-size:.78rem;color:var(--mut)}
+.stage-dots{display:flex;gap:6px;flex:1}.stage-dots i{height:4px;flex:1;max-width:46px;border-radius:2px;background:#2a3b60;overflow:hidden;cursor:pointer}
+.stage-dots i.on::after{content:"";display:block;height:100%;background:var(--ac);animation:fill var(--dur,8s) linear forwards}
+.stage:hover .stage-dots i.on::after{animation-play-state:paused}
+@keyframes fill{from{width:0}to{width:100%}}
+#clock{font-variant-numeric:tabular-nums;color:var(--tx);font-weight:700}
+.live-sec h2{display:flex;align-items:center;gap:10px}
+.live-card{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.live-card:hover{border-color:var(--red)}
+.live-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.live-card .tag{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-weight:800;font-size:.75rem;padding:4px 10px 4px 8px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.live-card .tag i{width:9px;height:9px;border-radius:50%;background:#fff;animation:p 1s infinite}
+.live-card div{padding:12px 14px}.live-card h3{font-size:1rem;line-height:1.35}.live-card small{color:var(--mut)}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.nav-live{display:none;align-items:center;gap:6px}.nav-live.on{display:inline-flex}.nav-live i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:p 1s infinite}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--mut)}
+@media(max-width:720px){.slide{grid-template-columns:1fr;gap:10px;padding:5% 5% 12%;align-content:center}.fact:nth-child(n+3){display:none}}
+@media(prefers-reduced-motion:reduce){.slide{transition:none}.dot,.tag i,.nav-live i{animation:none}}
 @media(max-width:720px){nav{display:none}.about{grid-template-columns:1fr}}
 </style>
 </head>
@@ -57,20 +85,28 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 
 <header><div class="wrap">
   <a href="#topo" class="logo">PAPA CHARLIE <b>GOLF</b> TV</a>
-  <nav><a href="#aovivo">Ao vivo</a><a href="#videos">Vídeos</a><a href="#sbrf">SBRF</a><a href="#sobre">Sobre</a><a href="#apoie">Apoie</a></nav>
+  <nav><a href="#aovivo" class="nav-live" id="navLive"><i></i>Ao vivo agora</a><a href="#aovivo" id="navOff">Ao vivo agora</a><a href="#videos">Vídeos</a><a href="#sbrf">SBRF</a><a href="#sobre">Sobre</a><a href="#apoie">Apoie</a></nav>
 </div></header>
 
 <main id="topo">
-<div class="wrap hero" id="aovivo">
-  <span class="badge"><i class="dot"></i> AO VIVO DO AEROPORTO DO RECIFE</span>
-  <h1>Spotting ao vivo em <span>SBRF</span></h1>
-  <p>Pousos, decolagens e movimento do Aeroporto Internacional do Recife/Guararapes, direto do canal Papa Charlie Golf TV.</p>
-  <div class="player"><iframe id="live" title="Live" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+<div class="wrap hero" id="inicio">
+  <span class="badge"><i class="dot" style="background:var(--ac)"></i> NO AR 24 HORAS · AEROPORTO DO RECIFE</span>
+  <h1>Spotting em <span>SBRF</span></h1>
+  <p>Pousos, decolagens e movimento do Aeroporto Internacional do Recife/Guararapes, direto do canal Papa Charlie Golf TV. Confira os dados do aeroporto e veja se tem live no ar agora.</p>
+  <div class="stage" id="stage" aria-label="Apresentação do Aeroporto do Recife">
+    <div id="slides"></div>
+    <div class="stage-bar"><div class="stage-dots" id="dots"></div><span>Hora em Recife <span id="clock">--:--:--</span></span></div>
+  </div>
   <div class="btns">
-    <a class="btn yt" id="btnYt" target="_blank" rel="noopener">▶ Assistir no YouTube</a>
+    <a class="btn yt" href="#aovivo">▶ Ver lives no ar</a><a class="btn" id="btnYt" target="_blank" rel="noopener">Canal no YouTube</a>
     <a class="btn pri" href="#apoie">Apoiar o canal</a>
   </div>
 </div>
+
+<section id="aovivo" class="live-sec"><div class="wrap">
+  <h2>Ao vivo agora <span id="liveCount" style="color:var(--mut);font-size:.9rem;font-weight:400"></span></h2>
+  <div class="live-grid" id="liveGrid"><p style="color:var(--mut)">Verificando lives…</p></div>
+</div></section>
 
 <section id="videos"><div class="wrap">
   <h2>Últimos vídeos</h2>
@@ -126,13 +162,72 @@ const CONFIG = {
 };
 /* ======================================== */
 const $ = id => document.getElementById(id);
-$("live").src = "https://www.youtube.com/embed/live_stream?channel=" + CONFIG.channelId + "&autoplay=1&mute=1";
 $("btnYt").href = CONFIG.channelUrl + "/live";
 $("btnDoar").href = CONFIG.donateUrl;
 $("metarLink").href = CONFIG.metarUrl;
 $("ano").textContent = new Date().getFullYear();
 $("social").innerHTML = CONFIG.social.filter(s=>s.url && s.url!=="#")
   .map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.nome}</a>`).join("");
+
+
+/* ====== APRESENTAÇÃO DO AEROPORTO (edite os dados aqui) ====== */
+const SLIDES = [
+  {k:"Visão geral", t:"Aeroporto Internacional do Recife/Guararapes – Gilberto Freyre", s:"Principal porta de entrada aérea de Pernambuco.",
+   f:[["SBRF","Código ICAO"],["REC","Código IATA"],["Recife – PE","Cidade atendida"]]},
+  {k:"Localização", t:"Na Zona Sul do Recife", s:"Bairro da Imbiribeira, a poucos quilômetros do centro.",
+   f:[["Imbiribeira","Bairro"],["≈ 10 km","Distância do centro"],["≈ 10 m (33 ft)","Elevação do aeródromo"]]},
+  {k:"Pista", t:"Uma pista, duas cabeceiras", s:"A cabeceira em uso muda conforme o vento.",
+   f:[["18 / 36","Designação da pista"],["3.007 m × 45 m","Comprimento × largura"],["Norte–Sul","Orientação aproximada"]]},
+  {k:"Operação", t:"Aberto 24 horas", s:"Pousos e decolagens a qualquer hora, todos os dias.",
+   f:[["24 h","Funcionamento"],["Aena Brasil","Administradora (concessão)"],["Aeroporto internacional","Classificação"]]},
+  {k:"Como chegar", t:"Terminal ligado ao metrô", s:"Acesso por metrô, ônibus, táxi e aplicativo.",
+   f:[["Estação Aeroporto","Metrô do Recife – Linha Sul"],["Ônibus e BRT","Integração urbana"],["Estacionamento","No complexo do terminal"]]},
+  {k:"Companhias", t:"Voos para o Brasil e o exterior", s:"Operações nacionais e internacionais ao longo do dia.",
+   f:[["LATAM · GOL · Azul","Principais companhias nacionais"],["Voos internacionais","Conexões com a Europa e as Américas"],["Carga","Terminal de cargas no aeroporto"]]},
+  {k:"Spotting", t:"Acompanhe pelo canal", s:"Veja METAR, cabeceira em uso e movimento na live.",
+   f:[["METAR","Condições atuais no link da seção SBRF"],["Chat da live","Mande sua foto ou vídeo"],["Papa Charlie Golf TV","Spotting em SBRF"]]}
+];
+const SLIDE_MS = 8000;
+(function(){
+  const box=$("slides"), dots=$("dots"); let cur=0, timer;
+  box.innerHTML = SLIDES.map(s=>`<article class="slide"><div><div class="kick">${s.k}</div><h2>${s.t}</h2><p class="sub">${s.s}</p></div><div class="facts">${s.f.map(f=>`<div class="fact"><b>${f[0]}</b><span>${f[1]}</span></div>`).join("")}</div></article>`).join("");
+  dots.innerHTML = SLIDES.map((_,i)=>`<i data-i="${i}" title="Slide ${i+1}"></i>`).join("");
+  dots.style.setProperty("--dur", SLIDE_MS+"ms");
+  const sl=[...box.children], dt=[...dots.children];
+  function show(i){
+    cur=(i+sl.length)%sl.length;
+    sl.forEach((e,j)=>e.classList.toggle("on",j===cur));
+    dt.forEach((e,j)=>{e.classList.remove("on"); if(j===cur){void e.offsetWidth; e.classList.add("on");}});
+    clearTimeout(timer); timer=setTimeout(()=>show(cur+1),SLIDE_MS);
+  }
+  dots.onclick=e=>{const i=e.target.dataset.i; if(i!==undefined) show(+i);};
+  show(0);
+  const clock=()=>{$("clock").textContent=new Date().toLocaleTimeString("pt-BR",{timeZone:"America/Recife"});};
+  clock(); setInterval(clock,1000);
+})();
+
+/* ====== AO VIVO AGORA ====== */
+async function loadLives(){
+  const g=$("liveGrid");
+  try{
+    const r=await fetch("/.netlify/functions/live",{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const lives=await r.json();
+    $("navLive").classList.toggle("on",lives.length>0);
+    $("navOff").style.display=lives.length?"none":"";
+    $("liveCount").textContent=lives.length?`(${lives.length} no ar)`:"";
+    g.innerHTML = lives.length ? lives.map(v=>`
+      <a class="live-card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+        <img src="https://i.ytimg.com/vi/${v.id}/hqdefault_live.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${v.id}/hqdefault.jpg'" alt="">
+        <span class="tag"><i></i>AO VIVO</span>
+        <div><h3>${String(v.title||"Live").replace(/</g,"&lt;")}</h3><small>Clique para assistir no YouTube</small></div>
+      </a>`).join("")
+      : `<div class="empty" style="grid-column:1/-1">Nenhuma live no ar agora. <a href="${CONFIG.channelUrl}/streams" style="color:var(--ac)" target="_blank" rel="noopener">Ver o canal →</a></div>`;
+  }catch(e){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1">Não foi possível verificar as lives agora. <a href="${CONFIG.channelUrl}/live" style="color:var(--ac)" target="_blank" rel="noopener">Abrir no YouTube →</a></div>`;
+  }
+}
+loadLives(); setInterval(loadLives,60000);
 
 (async () => {
   const g = $("videosGrid");
