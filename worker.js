@@ -130,17 +130,79 @@ async function live(env) {
 }
 
 /* ================= VÍDEOS ================= */
-async function videos() {
+// Devolve { videos: [4 últimos vídeos], streams: [4 últimas lives] }.
+// Com YOUTUBE_API_KEY: lê a lista de uploads do canal e separa lives (têm liveStreamingDetails) de vídeos comuns.
+// Sem chave: usa o feed RSS e confere cada página para saber se é uma live (menos confiável).
+const N = 4;
+const isoSeg = d => { const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(d || ""); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0; };
+
+async function canalViaApi(key) {
+  const playlist = "UU" + CHANNEL_ID.slice(2); // playlist de uploads do canal
+  const vids = [], strs = [];
+  let token = "";
+  for (let p = 0; p < 4 && (vids.length < N || strs.length < N); p++) {
+    const pl = await ft(`https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId=${playlist}&key=${key}${token ? "&pageToken=" + token : ""}`);
+    if (!pl.ok) throw new Error("api playlist " + pl.status);
+    const pj = await pl.json();
+    const ids = (pj.items || []).map(i => i.contentDetails.videoId);
+    if (ids.length) {
+      const dr = await ft(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails&id=${ids.join(",")}&key=${key}`);
+      if (!dr.ok) throw new Error("api videos " + dr.status);
+      const dj = await dr.json();
+      const byId = Object.fromEntries((dj.items || []).map(v => [v.id, v]));
+      for (const id of ids) {
+        const v = byId[id];
+        if (!v) continue;
+        const ld = v.liveStreamingDetails;
+        if (ld) {
+          const st = v.snippet.liveBroadcastContent;
+          if (st === "upcoming") continue; // live agendada, ainda não começou
+          strs.push({ id, title: v.snippet.title, date: ld.actualStartTime || v.snippet.publishedAt, live: st === "live" });
+        } else {
+          if (isoSeg(v.contentDetails.duration) <= 60) continue; // ignora Shorts
+          vids.push({ id, title: v.snippet.title, date: v.snippet.publishedAt });
+        }
+      }
+    }
+    token = pj.nextPageToken;
+    if (!token) break;
+  }
+  return { videos: vids.slice(0, N), streams: strs.slice(0, N) };
+}
+
+async function canalViaRss() {
+  const res = await ft(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`);
+  if (!res.ok) throw new Error("feed " + res.status);
+  const xml = await res.text();
+  const entries = xml.split("<entry>").slice(1, 16).map(e => ({
+    id: (e.match(/<yt:videoId>(.*?)<\/yt:videoId>/) || [])[1],
+    title: dec((e.match(/<title>(.*?)<\/title>/) || [])[1] || ""),
+    date: (e.match(/<published>(.*?)<\/published>/) || [])[1]
+  })).filter(v => v.id);
+  const marcados = await Promise.all(entries.map(async v => {
+    try {
+      const r = await ft(`https://www.youtube.com/watch?v=${v.id}`, { headers: UA }, 6000);
+      const html = await r.text();
+      return { ...v, live: /"isLiveContent":\s*true/.test(html) };
+    } catch { return { ...v, live: false }; }
+  }));
+  return {
+    videos: marcados.filter(v => !v.live).slice(0, N),
+    streams: marcados.filter(v => v.live).slice(0, N)
+  };
+}
+
+async function videos(env) {
   try {
-    const res = await ft(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`);
-    if (!res.ok) throw new Error("feed " + res.status);
-    const xml = await res.text();
-    const entries = xml.split("<entry>").slice(1, 13).map(e => ({
-      id: (e.match(/<yt:videoId>(.*?)<\/yt:videoId>/) || [])[1],
-      title: dec((e.match(/<title>(.*?)<\/title>/) || [])[1] || ""),
-      date: (e.match(/<published>(.*?)<\/published>/) || [])[1]
-    })).filter(v => v.id);
-    return send(200, entries, "public, max-age=300");
+    const key = env.YOUTUBE_API_KEY;
+    let dados;
+    if (key) {
+      try { dados = await canalViaApi(key); }
+      catch (e) { dados = await canalViaRss(); } // chave inválida/API desligada
+    } else {
+      dados = await canalViaRss();
+    }
+    return send(200, dados, "public, max-age=300");
   } catch (err) {
     return send(502, { error: String(err) });
   }
@@ -195,7 +257,7 @@ export default {
       switch (m[1]) {
         case "metar": return metar(env);
         case "live": return live(env);
-        case "videos": return videos();
+        case "videos": return videos(env);
         case "stats": return stats(env);
       }
     }

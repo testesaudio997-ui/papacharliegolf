@@ -40,7 +40,14 @@ h2{font-size:1.5rem;margin-bottom:18px}h2::after{content:"";display:block;width:
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:transform .15s}
 .card:hover{transform:translateY(-3px)}
 .card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1328}
-.card div{padding:12px 14px}.card h3{font-size:.95rem;line-height:1.35}.card small{color:var(--mut)}
+.card{position:relative}
+.card div{padding:12px 14px}.card h3{font-size:.95rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.card small{color:var(--mut)}
+.card .tag{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-weight:800;font-size:.72rem;padding:3px 10px 3px 8px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.card .tag i{width:8px;height:8px;border-radius:50%;background:#fff;animation:p 1s infinite}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.g4{grid-template-columns:1fr}}
+.more{margin-top:14px;text-align:right;font-size:.9rem}.more a{color:var(--ac)}.more a:hover{text-decoration:underline}
 .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
 .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
 .box b{display:block;color:var(--ac);font-size:1.5rem}.box span{color:var(--mut);font-size:.9rem}
@@ -136,7 +143,12 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 
 <section id="videos"><div class="wrap">
   <h2>Últimos vídeos</h2>
-  <div class="grid" id="videosGrid"><p style="color:var(--mut)">Carregando vídeos…</p></div>
+  <div class="grid g4" id="videosGrid"><p style="color:var(--mut)">Carregando vídeos…</p></div>
+  <p class="more"><a id="moreVideos" target="_blank" rel="noopener">Ver todos os vídeos →</a></p>
+
+  <h2 style="margin-top:44px">Últimas lives</h2>
+  <div class="grid g4" id="streamsGrid"><p style="color:var(--mut)">Carregando lives…</p></div>
+  <p class="more"><a id="moreStreams" target="_blank" rel="noopener">Ver todas as lives →</a></p>
 </div></section>
 
 <section id="sbrf"><div class="wrap">
@@ -178,6 +190,8 @@ const CONFIG = {
   channelId: "UCdz_Kbzu83ZE86LVcGFN0JA",
   channelUrl: "https://www.youtube.com/channel/UCdz_Kbzu83ZE86LVcGFN0JA",
   donateUrl: "https://livepix.gg/SEU_USUARIO",          // troque pelo seu link LivePix
+  videosUrl: "https://www.youtube.com/@papacharliegolfTV/videos",
+  streamsUrl: "https://www.youtube.com/@papacharliegolfTV/streams",
   metarUrl: "https://aisweb.decea.mil.br/?i=aerodromos&codigo=SBRF",
   social: [
     {nome:"YouTube",  url:"https://www.youtube.com/channel/UCdz_Kbzu83ZE86LVcGFN0JA"},
@@ -191,6 +205,8 @@ const $ = id => document.getElementById(id);
 $("btnYt").href = CONFIG.channelUrl + "/live";
 $("btnDoar").href = CONFIG.donateUrl;
 $("metarLink").href = CONFIG.metarUrl;
+$("moreVideos").href = CONFIG.videosUrl;
+$("moreStreams").href = CONFIG.streamsUrl;
 $("ano").textContent = new Date().getFullYear();
 {const h=+new Date().toLocaleString("pt-BR",{timeZone:"America/Recife",hour:"numeric",hour12:false});$("saud").textContent=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";}
 const ICONS = {
@@ -205,7 +221,7 @@ $("social").innerHTML = CONFIG.social.filter(s=>s.url && s.url!=="#")
 const ART2 = `<svg viewBox="0 0 400 300" role="img" aria-label="Live diária com chat da galera"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd6"/><stop offset="1" stop-color="#0d1c3d"/></linearGradient></defs><rect x="20" y="14" width="360" height="206" rx="16" fill="url(#sk)" stroke="#1d2d4d" stroke-width="2"/><rect x="20" y="170" width="360" height="50" rx="0" fill="#0b1328" opacity=".55"/><g transform="translate(236 84) rotate(-18) scale(.72)" fill="#fff"><ellipse cx="60" cy="0" rx="62" ry="7"/><path d="M42 0L68 -46L80 -46L70 0Z"/><path d="M42 0L68 46L80 46L70 0Z"/><path d="M108 0L124 -20L131 -20L124 0Z"/><path d="M108 0L124 20L131 20L124 0Z"/></g><rect x="36" y="28" width="100" height="26" rx="13" fill="#ff3b3b"/><circle cx="52" cy="41" r="5" fill="#fff"><animate attributeName="opacity" values="1;.2;1" dur="1.2s" repeatCount="indefinite"/></circle><text x="65" y="46" font-size="12" font-weight="800" fill="#fff" font-family="system-ui,sans-serif" textLength="58" lengthAdjust="spacingAndGlyphs">AO VIVO</text><g font-family="system-ui,sans-serif" font-size="11"><rect x="36" y="124" width="132" height="26" rx="13" fill="#fff"/><text x="48" y="141" fill="#0f1a30">Que pouso lindo! ✈</text><rect x="196" y="150" width="150" height="26" rx="13" fill="#ffb020"/><text x="208" y="167" fill="#1a1200">Qual cabeceira hoje?</text><rect x="64" y="182" width="124" height="26" rx="13" fill="#1d2d4d"/><text x="76" y="199" fill="#e8eefc">Mandei minha foto!</text></g><g font-family="system-ui,sans-serif" font-size="12" font-weight="700" text-anchor="middle"><g fill="#ffb020"><circle cx="65" cy="258" r="15"/><circle cx="119" cy="258" r="15"/><circle cx="173" cy="258" r="15"/><circle cx="227" cy="258" r="15"/><circle cx="281" cy="258" r="15"/><circle cx="335" cy="258" r="15"/></g><g fill="#1a1200"><text x="65" y="262">S</text><text x="119" y="262">T</text><text x="173" y="262">Q</text><text x="227" y="262">Q</text><text x="281" y="262">S</text><text x="335" y="262">S</text></g></g></svg>`;
 const COMPASS = `<svg class="runway" viewBox="0 0 200 300" role="img" aria-label="Pista 18/36 com a cabeceira em uso"><rect x="0" y="0" width="200" height="300" rx="14" fill="#0b1328"/><rect x="56" y="8" width="88" height="284" fill="#2b313d"/><rect x="56" y="8" width="3" height="284" fill="#e8eefc"/><rect x="141" y="8" width="3" height="284" fill="#e8eefc"/><g id="th36" fill="#fff"><rect x="64" y="16" width="5" height="26"/><rect x="73" y="16" width="5" height="26"/><rect x="82" y="16" width="5" height="26"/><rect x="91" y="16" width="5" height="26"/><rect x="104" y="16" width="5" height="26"/><rect x="113" y="16" width="5" height="26"/><rect x="122" y="16" width="5" height="26"/><rect x="131" y="16" width="5" height="26"/></g><g id="th18" fill="#fff"><rect x="64" y="258" width="5" height="26"/><rect x="73" y="258" width="5" height="26"/><rect x="82" y="258" width="5" height="26"/><rect x="91" y="258" width="5" height="26"/><rect x="104" y="258" width="5" height="26"/><rect x="113" y="258" width="5" height="26"/><rect x="122" y="258" width="5" height="26"/><rect x="131" y="258" width="5" height="26"/></g><line x1="100" y1="112" x2="100" y2="188" stroke="#e8eefc" stroke-width="3" stroke-dasharray="10 9"/><g font-family="system-ui,sans-serif" font-weight="800" font-size="30" text-anchor="middle"><text id="rw36" x="100" y="82" fill="#cfd8ee">36</text><text id="rw18" x="100" y="82" fill="#cfd8ee" transform="rotate(180 100 150)">18</text></g><g id="ar18" style="opacity:0;transition:opacity .6s" fill="#ffb020" stroke="#ffb020"><line x1="168" y1="100" x2="168" y2="172" stroke-width="5" stroke-linecap="round"/><path d="M158 168L168 192L178 168Z" stroke="none"/></g><g id="ar36" style="opacity:0;transition:opacity .6s" fill="#ffb020" stroke="#ffb020"><line x1="168" y1="200" x2="168" y2="128" stroke-width="5" stroke-linecap="round"/><path d="M158 132L168 108L178 132Z" stroke="none"/></g><g font-family="system-ui,sans-serif" font-size="10" fill="#8fa3c7" text-anchor="middle"><text x="168" y="214">pouso</text><text x="24" y="18">N</text></g></svg>`;
 const SLIDES = [
-  {c:"photo", h:`<img class="bg" src="747-flypro.jpg" alt="Boeing 747 cargueiro em aproximação"><div class="shade"></div><a href="https://www.youtube.com/live/Z0kGpfs1sT4?si=TNpYpnpmsweobyCN&t=2987" target="_blank" rel="noopener" aria-label="Reveja a vinda do 747 da Flypro no YouTube" style="position:absolute;inset:0;z-index:2"></a><div class="cap"><div class="kick">Cargueiro Boeing 747</div><h2>REVEJA A VINDA DO 747 DA FLYPRO NO RECIFE</h2><p class="sub">Assista de novo no canal Papa Charlie Golf TV.</p></div><small class="credit">Foto: Robert Dumitrescu / JetPhotos</small>`},
+  {c:"photo", h:`<img class="bg" src="747-flypro.jpg" alt="Boeing 747 cargueiro pousando no Aeroporto do Recife"><div class="shade"></div><a href="https://www.youtube.com/live/Z0kGpfs1sT4?si=TNpYpnpmsweobyCN&t=2987" target="_blank" rel="noopener" aria-label="Reveja a vinda do 747 da Flypro no YouTube" style="position:absolute;inset:0;z-index:2"></a><div class="cap"><div class="kick">Cargueiro Boeing 747</div><h2>REVEJA A VINDA DO 747 DA FLYPRO NO RECIFE</h2><p class="sub">Assista de novo no canal Papa Charlie Golf TV.</p></div><small class="credit">Foto: Vinicius Fernando · @vini_phootos._</small>`},
   {c:"", h:`<div><div class="kick">Todos os dias</div><h2>Lives diárias com interação com a galera</h2><p class="sub">Entre no chat, mande sua foto ou vídeo e converse com a comunidade enquanto os aviões pousam e decolam.</p></div><div class="artbox">${ART2}</div>`},
   {c:"split", h:`<div><div class="kick">METAR · SBRF · tempo real</div><h2>Vento, clima e cabeceira</h2><div class="facts" style="margin-top:14px"><div class="fact"><b id="mWind">--</b><span>Vento (de onde sopra)</span></div><div class="fact"><b id="mClima">--</b><span>Clima</span></div><div class="fact"><b id="mRwy">--</b><span>Cabeceira em uso (estimada pelo vento)</span></div></div><p class="mraw" id="mRaw">Carregando METAR…</p></div>${COMPASS}`}
 ].map(x=>x);
@@ -268,19 +284,27 @@ async function loadLives(){
 }
 loadLives(); setInterval(loadLives,60000);
 
+/* ====== ÚLTIMOS 4 VÍDEOS E ÚLTIMAS 4 LIVES ====== */
 (async () => {
-  const g = $("videosGrid");
+  const gv = $("videosGrid"), gs = $("streamsGrid");
+  const card = v => `
+      <a class="card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+        <img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="">
+        ${v.live ? '<span class="tag"><i></i>AO VIVO</span>' : ""}
+        <div><h3>${String(v.title||"").replace(/</g,"&lt;")}</h3><small>${v.date ? new Date(v.date).toLocaleDateString("pt-BR") : ""}</small></div>
+      </a>`;
+  const vazio = (txt, url) => `<div class="empty" style="grid-column:1/-1">${txt} <a href="${url}" style="color:var(--ac)" target="_blank" rel="noopener">Ver no YouTube →</a></div>`;
   try {
     const r = await fetch("/.netlify/functions/videos");
     if(!r.ok) throw 0;
-    const list = await r.json();
-    g.innerHTML = list.map(v => `
-      <a class="card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
-        <img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="">
-        <div><h3>${v.title.replace(/</g,"&lt;")}</h3><small>${new Date(v.date).toLocaleDateString("pt-BR")}</small></div>
-      </a>`).join("");
+    const d = await r.json();
+    const videos = (Array.isArray(d) ? d : d.videos || []).slice(0,4);
+    const streams = (Array.isArray(d) ? [] : d.streams || []).slice(0,4);
+    gv.innerHTML = videos.length ? videos.map(card).join("") : vazio("Nenhum vídeo encontrado.", CONFIG.videosUrl);
+    gs.innerHTML = streams.length ? streams.map(card).join("") : vazio("Nenhuma live encontrada.", CONFIG.streamsUrl);
   } catch(e) {
-    g.innerHTML = `<p style="color:var(--mut)">Não foi possível carregar os vídeos agora. <a href="${CONFIG.channelUrl}/videos" style="color:var(--ac)" target="_blank" rel="noopener">Ver no YouTube →</a></p>`;
+    gv.innerHTML = vazio("Não foi possível carregar os vídeos agora.", CONFIG.videosUrl);
+    gs.innerHTML = vazio("Não foi possível carregar as lives agora.", CONFIG.streamsUrl);
   }
 })();
 /* ====== RESUMO DO CANAL (inscritos, visualizações, vídeos) ====== */
