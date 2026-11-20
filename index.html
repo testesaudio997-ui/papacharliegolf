@@ -19,6 +19,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(7,13,26,.92);backdrop-fi
 header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
 .logo{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}.logo img{border-radius:50%;box-shadow:0 0 0 2px rgba(232,238,252,.35)}.logo b{color:var(--ac)}
 nav a{margin-left:20px;color:var(--mut);font-size:.92rem}nav a:hover{color:var(--ac)}
+nav{margin-left:auto}.hora{margin-left:22px;font-size:.9rem;color:var(--mut);white-space:nowrap}
 .hero{padding:44px 0 20px;text-align:center}
 .hero h1{font-size:clamp(1.9rem,5vw,3.2rem);line-height:1.1}
 .hero h1 span{color:var(--ac)}
@@ -46,7 +47,8 @@ h2{font-size:1.5rem;margin-bottom:18px}h2::after{content:"";display:block;width:
 .about{display:grid;grid-template-columns:1.3fr 1fr;gap:26px;align-items:start}
 .about p{color:var(--mut);margin-bottom:12px}
 .social{display:flex;flex-wrap:wrap;gap:10px}
-.social a{padding:10px 16px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:.92rem}
+.social a{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:.92rem}
+.social svg{width:20px;height:20px;flex:none}
 .social a:hover{border-color:var(--ac);color:var(--ac)}
 .support{text-align:center;background:linear-gradient(135deg,#13213f,#0f1a30);border:1px solid var(--line);border-radius:16px;padding:36px 20px}
 .support p{color:var(--mut);margin:8px auto 18px;max-width:540px}
@@ -101,17 +103,17 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 
 <header><div class="wrap">
   <a href="#topo" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"></a>
-  <nav><a href="#aovivo" class="nav-live" id="navLive"><i></i>Ao vivo agora</a><a href="#aovivo" id="navOff">Ao vivo agora</a><a href="#videos">Vídeos</a><a href="#sbrf">SBRF</a><a href="#sobre">Sobre</a><a href="#apoie">Apoie</a></nav>
+  <nav><a href="#aovivo" class="nav-live" id="navLive"><i></i>Ao vivo agora</a><a href="#aovivo" id="navOff">Ao vivo agora</a><a href="#videos">Vídeos</a><a href="#sbrf">SBRF</a><a href="#sobre">Sobre</a><a href="#apoie">Apoie</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
 </div></header>
 
 <main id="topo">
 <div class="wrap hero" id="inicio">
   <span class="badge"><i class="dot" style="background:var(--ac)"></i> NO AR 24 HORAS · AEROPORTO DO RECIFE</span>
   <h1>Bem-vindo ao <span>Papa Charlie Golf</span></h1>
-  <p><b id="saud" style="color:var(--tx)">Olá</b>, aeronautas! Você está na maior live do Norte e Nordeste, com o movimento do Aeroporto do Recife 24 horas no ar.</p>
+  <p><b id="saud" style="color:var(--tx)">Olá</b>, aeronautas! Você está na maior live do Norte e Nordeste do Brasil, com o movimento do Aeroporto do Recife 24 horas no ar.</p>
   <div class="stage" id="stage" aria-label="Apresentação do Aeroporto do Recife">
     <div id="slides"></div>
-    <div class="stage-bar"><div class="stage-dots" id="dots"></div><span>Hora em Recife <span id="clock">--:--:--</span></span></div>
+    <div class="stage-bar"><div class="stage-dots" id="dots"></div></div>
   </div>
   <div class="btns">
     <a class="btn yt" href="#aovivo">▶ Ver lives no ar</a><a class="btn" id="btnYt" target="_blank" rel="noopener">Canal no YouTube</a>
@@ -179,7 +181,7 @@ const CONFIG = {
   metarUrl: "https://aisweb.decea.mil.br/?i=aerodromos&codigo=SBRF",
   social: [
     {nome:"YouTube",  url:"https://www.youtube.com/channel/UCdz_Kbzu83ZE86LVcGFN0JA"},
-    {nome:"Instagram",url:"#"},
+    {nome:"Instagram",url:"https://www.instagram.com/papacharliegolfbr/"},
     {nome:"WhatsApp", url:"#"},
     {nome:"Twitch",   url:"#"}
   ]
@@ -191,8 +193,12 @@ $("btnDoar").href = CONFIG.donateUrl;
 $("metarLink").href = CONFIG.metarUrl;
 $("ano").textContent = new Date().getFullYear();
 {const h=+new Date().toLocaleString("pt-BR",{timeZone:"America/Recife",hour:"numeric",hour12:false});$("saud").textContent=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";}
+const ICONS = {
+  "YouTube": `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="5" width="22" height="14" rx="4" fill="#ff0000"/><path d="M10 9l5 3-5 3z" fill="#fff"/></svg>`,
+  "Instagram": `<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".35" stop-color="#fa7e1e"/><stop offset=".65" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#igg)"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="#fff"/></svg>`
+};
 $("social").innerHTML = CONFIG.social.filter(s=>s.url && s.url!=="#")
-  .map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.nome}</a>`).join("");
+  .map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${ICONS[s.nome]||""}${s.nome}</a>`).join("");
 
 
 /* ====== APRESENTAÇÃO DO AEROPORTO (edite os dados aqui) ====== */
