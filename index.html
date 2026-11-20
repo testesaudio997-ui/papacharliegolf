@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="logo.png">
+<title>Papa Charlie Golf TV – Aeroporto do Recife ao vivo</title>
+<meta name="description" content="Acompanhe ao vivo os pousos e decolagens do Aeroporto Internacional do Recife (SBRF) no canal Papa Charlie Golf TV.">
+<meta property="og:title" content="Papa Charlie Golf TV">
+<meta property="og:description" content="Spotting ao vivo do Aeroporto do Recife (SBRF).">
+<style>
+:root{--bg:#070d1a;--card:#0f1a30;--line:#1d2d4d;--tx:#e8eefc;--mut:#8fa3c7;--ac:#ffb020;--red:#ff3b3b}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1100px;margin:auto;padding:0 20px}
+header{position:sticky;top:0;z-index:10;background:rgba(7,13,26,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}.logo img{border-radius:50%;box-shadow:0 0 0 2px rgba(232,238,252,.35)}.logo b{color:var(--ac)}
+nav a{margin-left:20px;color:var(--mut);font-size:.92rem}nav a:hover{color:var(--ac)}
+nav{margin-left:auto}.hora{margin-left:22px;font-size:.9rem;color:var(--mut);white-space:nowrap}
+.hero{padding:44px 0 20px;text-align:center}
+.hero h1{font-size:clamp(1.9rem,5vw,3.2rem);line-height:1.1}
+.hero h1 span{color:var(--ac)}
+.hero p{color:var(--mut);max-width:620px;margin:12px auto 0}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;padding:5px 12px;border-radius:99px;background:#1a2540;margin-bottom:14px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--red);animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.25}}
+.player{margin:26px auto 0;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+.player iframe{width:100%;height:100%;border:0}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:22px 0}
+.btn{padding:12px 22px;border-radius:10px;font-weight:700;border:1px solid var(--line);background:var(--card)}
+.btn.pri{background:var(--ac);color:#1a1200;border-color:var(--ac)}
+.btn.yt{background:var(--red);border-color:var(--red)}
+.btn:hover{filter:brightness(1.12)}
+section{padding:46px 0}
+h2{font-size:1.5rem;margin-bottom:18px}h2::after{content:"";display:block;width:48px;height:3px;background:var(--ac);margin-top:8px;border-radius:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1328}
+.card div{padding:12px 14px}.card h3{font-size:.95rem;line-height:1.35}.card small{color:var(--mut)}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.box b{display:block;color:var(--ac);font-size:1.5rem}.box span{color:var(--mut);font-size:.9rem}
+.about{display:grid;grid-template-columns:1.3fr 1fr;gap:26px;align-items:start}
+.about p{color:var(--mut);margin-bottom:12px}
+.social{display:flex;flex-wrap:wrap;gap:10px}
+.social a{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:.92rem}
+.social svg{width:20px;height:20px;flex:none}
+.social a:hover{border-color:var(--ac);color:var(--ac)}
+.support{text-align:center;background:linear-gradient(135deg,#13213f,#0f1a30);border:1px solid var(--line);border-radius:16px;padding:36px 20px}
+.support p{color:var(--mut);margin:8px auto 18px;max-width:540px}
+footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-size:.85rem;text-align:center}
+
+.stage{position:relative;margin:26px auto 0;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(120% 120% at 15% 0%,#162a52 0%,#0a1226 60%)}
+.slide{position:absolute;inset:0;display:grid;grid-template-columns:1.1fr 1fr;gap:4%;align-items:center;padding:6% 6% 9%;text-align:left;opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s}
+.slide.on{opacity:1;visibility:visible}
+.slide h2{font-size:clamp(1.3rem,3.6vw,2.6rem);line-height:1.1;margin:0}.slide h2::after{display:none}
+.slide .sub{color:var(--mut);font-size:clamp(.8rem,1.5vw,1.05rem);margin-top:10px}
+.slide .kick{color:var(--ac);font-weight:700;font-size:clamp(.75rem,1.3vw,.95rem);margin-bottom:8px}
+.facts{display:grid;gap:clamp(6px,1.4vw,14px)}
+.fact{background:rgba(15,26,48,.85);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:10px;padding:clamp(6px,1.2vw,12px) clamp(10px,1.6vw,16px)}
+.fact b{display:block;font-size:clamp(.95rem,2.2vw,1.6rem);line-height:1.15}.fact span{color:var(--mut);font-size:clamp(.68rem,1.2vw,.88rem)}
+.stage-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(transparent,rgba(5,9,20,.9));font-size:.78rem;color:var(--mut)}
+.stage-dots{display:flex;gap:6px;flex:1}.stage-dots i{height:4px;flex:1;max-width:46px;border-radius:2px;background:#2a3b60;overflow:hidden;cursor:pointer}
+.stage-dots i.on::after{content:"";display:block;height:100%;background:var(--ac);animation:fill var(--dur,8s) linear forwards}
+.stage:hover .stage-dots i.on::after{animation-play-state:paused}
+@keyframes fill{from{width:0}to{width:100%}}
+#clock{font-variant-numeric:tabular-nums;color:var(--tx);font-weight:700}
+.stats{padding:6px 0 22px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--ac);border-radius:12px;padding:16px 14px;text-align:center}
+.stat b{display:block;font-size:clamp(1.3rem,4.2vw,2.1rem);line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mut);font-size:.82rem}
+@media(max-width:480px){.stats-grid{gap:8px}.stat{padding:12px 6px}.stat span{font-size:.7rem}}
+.live-sec h2{display:flex;align-items:center;gap:10px}
+.live-card{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.live-card:hover{border-color:var(--red)}
+.live-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.live-card .tag{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-weight:800;font-size:.75rem;padding:4px 10px 4px 8px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.live-card .tag i{width:9px;height:9px;border-radius:50%;background:#fff;animation:p 1s infinite}
+.live-card div{padding:12px 14px}.live-card h3{font-size:1rem;line-height:1.35}.live-card small{color:var(--mut)}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.nav-live{display:none;align-items:center;gap:6px}.nav-live.on{display:inline-flex}.nav-live i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:p 1s infinite}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--mut)}
+@media(max-width:720px){.slide{grid-template-columns:1fr;gap:10px;padding:5% 5% 12%;align-content:center}.split .fact:nth-child(n+4){display:none}.artbox,.runway{display:none}.cap{max-width:88%}.shade{background:rgba(5,9,20,.7)}}
+
+.slide.photo,.slide.split{padding:0}.slide.photo{display:block}
+.slide.photo .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,9,20,.9) 0%,rgba(5,9,20,.55) 48%,transparent 78%)}
+.cap{position:absolute;left:6%;top:50%;transform:translateY(-55%);max-width:52%}
+.cap h2{font-size:clamp(1.15rem,3.3vw,2.4rem)}
+.credit{position:absolute;right:14px;top:10px;font-size:.65rem;color:#fff;opacity:.8;text-shadow:0 1px 3px #000}
+.slide.split{padding:6% 6% 9%}.artbox svg,.runway{width:100%;height:auto;display:block}.runway{max-width:210px;justify-self:center}
+.mraw{font-size:clamp(.62rem,1.05vw,.8rem);color:var(--mut);margin-top:10px;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+@media(prefers-reduced-motion:reduce){.slide{transition:none}.dot,.tag i,.nav-live i{animation:none}}
+@media(max-width:720px){nav{display:none}.about{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <a href="#topo" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"></a>
+  <nav><a href="#aovivo" class="nav-live" id="navLive"><i></i>Ao vivo agora</a><a href="#aovivo" id="navOff">Ao vivo agora</a><a href="#videos">Vídeos</a><a href="#sbrf">SBRF</a><a href="#sobre">Sobre</a><a href="#apoie">Apoie</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
+</div></header>
+
+<main id="topo">
+<div class="wrap hero" id="inicio">
+  <span class="badge"><i class="dot" style="background:var(--ac)"></i> NO AR 24 HORAS · AEROPORTO DO RECIFE</span>
+  <h1>Bem-vindo ao <span>Papa Charlie Golf</span></h1>
+  <p><b id="saud" style="color:var(--tx)">Olá</b>, aeronautas! Você está na maior live do Norte e Nordeste do Brasil, com o movimento do Aeroporto do Recife 24 horas no ar.</p>
+  <div class="stage" id="stage" aria-label="Apresentação do Aeroporto do Recife">
+    <div id="slides"></div>
+    <div class="stage-bar"><div class="stage-dots" id="dots"></div></div>
+  </div>
+  <div class="btns">
+    <a class="btn yt" href="#aovivo">▶ Ver lives no ar</a><a class="btn" id="btnYt" target="_blank" rel="noopener">Canal no YouTube</a>
+    <a class="btn pri" href="#apoie">Apoiar o canal</a>
+  </div>
+</div>
+
+<section id="canal" class="stats"><div class="wrap">
+  <div class="stats-grid" aria-label="Resumo do canal">
+    <div class="stat"><b id="stSubs">--</b><span>Inscritos</span></div>
+    <div class="stat"><b id="stViews">--</b><span>Visualizações</span></div>
+    <div class="stat"><b id="stVids">--</b><span>Vídeos</span></div>
+  </div>
+</div></section>
+
+<section id="aovivo" class="live-sec"><div class="wrap">
+  <h2>Ao vivo agora <span id="liveCount" style="color:var(--mut);font-size:.9rem;font-weight:400"></span></h2>
+  <div class="live-grid" id="liveGrid"><p style="color:var(--mut)">Verificando lives…</p></div>
+</div></section>
+
+<section id="videos"><div class="wrap">
+  <h2>Últimos vídeos</h2>
+  <div class="grid" id="videosGrid"><p style="color:var(--mut)">Carregando vídeos…</p></div>
+</div></section>
+
+<section id="sbrf"><div class="wrap">
+  <h2>Aeroporto do Recife (SBRF)</h2>
+  <div class="info">
+    <div class="box"><b>SBRF</b><span>Código ICAO</span></div>
+    <div class="box"><b>REC</b><span>Código IATA</span></div>
+    <div class="box"><b>Recife – PE</b><span>Aeroporto Internacional dos Guararapes</span></div>
+    <div class="box"><b>METAR</b><span><a id="metarLink" target="_blank" rel="noopener" style="color:var(--ac)">Ver condições atuais →</a></span></div>
+  </div>
+</div></section>
+
+<section id="sobre"><div class="wrap about">
+  <div>
+    <h2>Sobre o canal</h2>
+    <p>O Papa Charlie Golf TV transmite ao vivo o movimento de aeronaves no Aeroporto do Recife, com acompanhamento de voos, comunicação, clima e curiosidades da aviação.</p>
+    <p>Entre no chat da live, mande sua foto ou vídeo e participe da comunidade de apaixonados por aviação.</p>
+  </div>
+  <div>
+    <h2>Redes sociais</h2>
+    <div class="social" id="social"></div>
+  </div>
+</div></section>
+
+<section id="apoie"><div class="wrap">
+  <div class="support">
+    <h2 style="margin-bottom:6px">Apoie o canal</h2>
+    <p>A live depende de equipamento, internet e muito tempo. Se curte o conteúdo, ajude a manter tudo no ar.</p>
+    <div class="btns" style="margin:0"><a class="btn pri" id="btnDoar" target="_blank" rel="noopener">Doar via LivePix</a></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">© <span id="ano"></span> Papa Charlie Golf TV · Site não oficial de nenhum órgão ou companhia aérea.</div></footer>
+
+<script>
+/* ====== CONFIGURAÇÕES (edite aqui) ====== */
+const CONFIG = {
+  channelId: "UCdz_Kbzu83ZE86LVcGFN0JA",
+  channelUrl: "https://www.youtube.com/channel/UCdz_Kbzu83ZE86LVcGFN0JA",
+  donateUrl: "https://livepix.gg/SEU_USUARIO",          // troque pelo seu link LivePix
+  metarUrl: "https://aisweb.decea.mil.br/?i=aerodromos&codigo=SBRF",
+  social: [
+    {nome:"YouTube",  url:"https://www.youtube.com/channel/UCdz_Kbzu83ZE86LVcGFN0JA"},
+    {nome:"Instagram",url:"https://www.instagram.com/papacharliegolfbr/"},
+    {nome:"WhatsApp", url:"#"},
+    {nome:"Twitch",   url:"#"}
+  ]
+};
+/* ======================================== */
+const $ = id => document.getElementById(id);
+$("btnYt").href = CONFIG.channelUrl + "/live";
+$("btnDoar").href = CONFIG.donateUrl;
+$("metarLink").href = CONFIG.metarUrl;
+$("ano").textContent = new Date().getFullYear();
+{const h=+new Date().toLocaleString("pt-BR",{timeZone:"America/Recife",hour:"numeric",hour12:false});$("saud").textContent=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";}
+const ICONS = {
+  "YouTube": `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="5" width="22" height="14" rx="4" fill="#ff0000"/><path d="M10 9l5 3-5 3z" fill="#fff"/></svg>`,
+  "Instagram": `<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".35" stop-color="#fa7e1e"/><stop offset=".65" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#igg)"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="#fff"/></svg>`
+};
+$("social").innerHTML = CONFIG.social.filter(s=>s.url && s.url!=="#")
+  .map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${ICONS[s.nome]||""}${s.nome}</a>`).join("");
+
+
+/* ====== APRESENTAÇÃO DO AEROPORTO (edite os dados aqui) ====== */
+const ART2 = `<svg viewBox="0 0 400 300" role="img" aria-label="Live diária com chat da galera"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd6"/><stop offset="1" stop-color="#0d1c3d"/></linearGradient></defs><rect x="20" y="14" width="360" height="206" rx="16" fill="url(#sk)" stroke="#1d2d4d" stroke-width="2"/><rect x="20" y="170" width="360" height="50" rx="0" fill="#0b1328" opacity=".55"/><g transform="translate(236 84) rotate(-18) scale(.72)" fill="#fff"><ellipse cx="60" cy="0" rx="62" ry="7"/><path d="M42 0L68 -46L80 -46L70 0Z"/><path d="M42 0L68 46L80 46L70 0Z"/><path d="M108 0L124 -20L131 -20L124 0Z"/><path d="M108 0L124 20L131 20L124 0Z"/></g><rect x="36" y="28" width="100" height="26" rx="13" fill="#ff3b3b"/><circle cx="52" cy="41" r="5" fill="#fff"><animate attributeName="opacity" values="1;.2;1" dur="1.2s" repeatCount="indefinite"/></circle><text x="65" y="46" font-size="12" font-weight="800" fill="#fff" font-family="system-ui,sans-serif" textLength="58" lengthAdjust="spacingAndGlyphs">AO VIVO</text><g font-family="system-ui,sans-serif" font-size="11"><rect x="36" y="124" width="132" height="26" rx="13" fill="#fff"/><text x="48" y="141" fill="#0f1a30">Que pouso lindo! ✈</text><rect x="196" y="150" width="150" height="26" rx="13" fill="#ffb020"/><text x="208" y="167" fill="#1a1200">Qual cabeceira hoje?</text><rect x="64" y="182" width="124" height="26" rx="13" fill="#1d2d4d"/><text x="76" y="199" fill="#e8eefc">Mandei minha foto!</text></g><g font-family="system-ui,sans-serif" font-size="12" font-weight="700" text-anchor="middle"><g fill="#ffb020"><circle cx="48" cy="258" r="15"/><circle cx="102" cy="258" r="15"/><circle cx="156" cy="258" r="15"/><circle cx="210" cy="258" r="15"/><circle cx="264" cy="258" r="15"/><circle cx="318" cy="258" r="15"/><circle cx="372" cy="258" r="15"/></g><g fill="#1a1200"><text x="48" y="262">D</text><text x="102" y="262">S</text><text x="156" y="262">T</text><text x="210" y="262">Q</text><text x="264" y="262">Q</text><text x="318" y="262">S</text><text x="372" y="262">S</text></g></g></svg>`;
+const COMPASS = `<svg class="runway" viewBox="0 0 200 300" role="img" aria-label="Pista 18/36 com a cabeceira em uso"><rect x="0" y="0" width="200" height="300" rx="14" fill="#0b1328"/><rect x="56" y="8" width="88" height="284" fill="#2b313d"/><rect x="56" y="8" width="3" height="284" fill="#e8eefc"/><rect x="141" y="8" width="3" height="284" fill="#e8eefc"/><g id="th36" fill="#fff"><rect x="64" y="16" width="5" height="26"/><rect x="73" y="16" width="5" height="26"/><rect x="82" y="16" width="5" height="26"/><rect x="91" y="16" width="5" height="26"/><rect x="104" y="16" width="5" height="26"/><rect x="113" y="16" width="5" height="26"/><rect x="122" y="16" width="5" height="26"/><rect x="131" y="16" width="5" height="26"/></g><g id="th18" fill="#fff"><rect x="64" y="258" width="5" height="26"/><rect x="73" y="258" width="5" height="26"/><rect x="82" y="258" width="5" height="26"/><rect x="91" y="258" width="5" height="26"/><rect x="104" y="258" width="5" height="26"/><rect x="113" y="258" width="5" height="26"/><rect x="122" y="258" width="5" height="26"/><rect x="131" y="258" width="5" height="26"/></g><line x1="100" y1="112" x2="100" y2="188" stroke="#e8eefc" stroke-width="3" stroke-dasharray="10 9"/><g font-family="system-ui,sans-serif" font-weight="800" font-size="30" text-anchor="middle"><text id="rw36" x="100" y="82" fill="#cfd8ee">36</text><text id="rw18" x="100" y="82" fill="#cfd8ee" transform="rotate(180 100 150)">18</text></g><g id="ar18" style="opacity:0;transition:opacity .6s" fill="#ffb020" stroke="#ffb020"><line x1="168" y1="100" x2="168" y2="172" stroke-width="5" stroke-linecap="round"/><path d="M158 168L168 192L178 168Z" stroke="none"/></g><g id="ar36" style="opacity:0;transition:opacity .6s" fill="#ffb020" stroke="#ffb020"><line x1="168" y1="200" x2="168" y2="128" stroke-width="5" stroke-linecap="round"/><path d="M158 132L168 108L178 132Z" stroke="none"/></g><g font-family="system-ui,sans-serif" font-size="10" fill="#8fa3c7" text-anchor="middle"><text x="168" y="214">pouso</text><text x="24" y="18">N</text></g></svg>`;
+const SLIDES = [
+  {c:"photo", h:`<img class="bg" src="747-flypro.jpg" alt="Boeing 747 cargueiro em aproximação"><div class="shade"></div><div class="cap"><div class="kick">Cargueiro Boeing 747</div><h2>REVEJA A VINDA DO 747 DA FLYPRO NO RECIFE</h2><p class="sub">Assista de novo no canal Papa Charlie Golf TV.</p></div><small class="credit">Foto: Robert Dumitrescu / JetPhotos</small>`},
+  {c:"", h:`<div><div class="kick">Todos os dias</div><h2>Lives diárias com interação com a galera</h2><p class="sub">Entre no chat, mande sua foto ou vídeo e converse com a comunidade enquanto os aviões pousam e decolam.</p></div><div class="artbox">${ART2}</div>`},
+  {c:"split", h:`<div><div class="kick">METAR · SBRF · tempo real</div><h2>Vento, clima e cabeceira</h2><div class="facts" style="margin-top:14px"><div class="fact"><b id="mWind">--</b><span>Vento (de onde sopra)</span></div><div class="fact"><b id="mClima">--</b><span>Clima</span></div><div class="fact"><b id="mRwy">--</b><span>Cabeceira em uso (estimada pelo vento)</span></div></div><p class="mraw" id="mRaw">Carregando METAR…</p></div>${COMPASS}`}
+].map(x=>x);
+const SLIDE_MS = 8000;
+(function(){
+  const box=$("slides"), dots=$("dots"); let cur=0, timer;
+  box.innerHTML = SLIDES.map(s=>`<article class="slide ${s.c}">${s.h}</article>`).join("");
+  dots.innerHTML = SLIDES.map((_,i)=>`<i data-i="${i}" title="Slide ${i+1}"></i>`).join("");
+  dots.style.setProperty("--dur", SLIDE_MS+"ms");
+  const sl=[...box.children], dt=[...dots.children];
+  function show(i){
+    cur=(i+sl.length)%sl.length;
+    sl.forEach((e,j)=>e.classList.toggle("on",j===cur));
+    dt.forEach((e,j)=>{e.classList.remove("on"); if(j===cur){void e.offsetWidth; e.classList.add("on");}});
+    clearTimeout(timer); timer=setTimeout(()=>show(cur+1),SLIDE_MS);
+  }
+  dots.onclick=e=>{const i=e.target.dataset.i; if(i!==undefined) show(+i);};
+  show(0);
+  const clock=()=>{$("clock").textContent=new Date().toLocaleTimeString("pt-BR",{timeZone:"America/Recife"});};
+  clock(); setInterval(clock,1000);
+})();
+
+
+/* ====== METAR (REDEMET via função do Netlify) ====== */
+async function loadMetar(){
+  try{
+    const r=await fetch("/.netlify/functions/metar",{cache:"no-store"}); if(!r.ok) throw 0;
+    const m=await r.json(), w=m.wind||{};
+    $("mWind").textContent = w.vrb ? `Variável · ${w.spd} kt` : (!w.spd ? "Calmo" : `${String(w.dir).padStart(3,"0")}° · ${w.spd} kt${w.gust?` (rajada ${w.gust})`:""}`);
+    $("mClima").textContent = m.clima + (m.temp!=null ? ` · ${m.temp}°C` : "");
+    $("mRwy").textContent = m.rwy ? "Cabeceira " + m.rwy : "Indefinida (vento fraco)";
+    const hora = m.validade ? new Date(m.validade.replace(" ","T")+"Z").toLocaleTimeString("pt-BR",{timeZone:"America/Recife",hour:"2-digit",minute:"2-digit"}) : "";
+    $("mRaw").textContent = m.raw + (hora ? `  ·  obs. ${hora} (Recife)` : "");
+    
+    ["18","36"].forEach(n=>{const on=m.rwy===n; $("rw"+n).setAttribute("fill", on?"#ffb020":"#cfd8ee"); $("th"+n).setAttribute("fill", on?"#ffb020":"#fff"); $("ar"+n).style.opacity = on?1:0;});
+  }catch(e){ $("mRaw").textContent="METAR indisponível no momento."; }
+}
+loadMetar(); setInterval(loadMetar,300000);
+
+/* ====== AO VIVO AGORA ====== */
+async function loadLives(){
+  const g=$("liveGrid");
+  try{
+    const r=await fetch("/.netlify/functions/live",{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const lives=await r.json();
+    $("navLive").classList.toggle("on",lives.length>0);
+    $("navOff").style.display=lives.length?"none":"";
+    $("liveCount").textContent=lives.length?`(${lives.length} no ar)`:"";
+    g.innerHTML = lives.length ? lives.map(v=>`
+      <a class="live-card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+        <img src="https://i.ytimg.com/vi/${v.id}/hqdefault_live.jpg" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${v.id}/hqdefault.jpg'" alt="">
+        <span class="tag"><i></i>AO VIVO</span>
+        <div><h3>${String(v.title||"Live").replace(/</g,"&lt;")}</h3><small>Clique para assistir no YouTube</small></div>
+      </a>`).join("")
+      : `<div class="empty" style="grid-column:1/-1">Nenhuma live no ar agora. <a href="${CONFIG.channelUrl}/streams" style="color:var(--ac)" target="_blank" rel="noopener">Ver o canal →</a></div>`;
+  }catch(e){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1">Não foi possível verificar as lives agora. <a href="${CONFIG.channelUrl}/live" style="color:var(--ac)" target="_blank" rel="noopener">Abrir no YouTube →</a></div>`;
+  }
+}
+loadLives(); setInterval(loadLives,60000);
+
+(async () => {
+  const g = $("videosGrid");
+  try {
+    const r = await fetch("/.netlify/functions/videos");
+    if(!r.ok) throw 0;
+    const list = await r.json();
+    g.innerHTML = list.map(v => `
+      <a class="card" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+        <img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="">
+        <div><h3>${v.title.replace(/</g,"&lt;")}</h3><small>${new Date(v.date).toLocaleDateString("pt-BR")}</small></div>
+      </a>`).join("");
+  } catch(e) {
+    g.innerHTML = `<p style="color:var(--mut)">Não foi possível carregar os vídeos agora. <a href="${CONFIG.channelUrl}/videos" style="color:var(--ac)" target="_blank" rel="noopener">Ver no YouTube →</a></p>`;
+  }
+})();
+/* ====== RESUMO DO CANAL (inscritos, visualizações, vídeos) ====== */
+(async () => {
+  try {
+    const r = await fetch("/.netlify/functions/stats");
+    if(!r.ok) throw 0;
+    const d = await r.json();
+    const set = (id,v) => { $(id).textContent = v || "--"; };
+    set("stSubs", d.inscritos); set("stViews", d.visualizacoes); set("stVids", d.videos);
+  } catch(e) { $("canal").style.display = "none"; }
+})();
+</script>
+</body>
+</html>
