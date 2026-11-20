@@ -76,7 +76,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 .stage:hover .stage-dots i.on::after{animation-play-state:paused}
 @keyframes fill{from{width:0}to{width:100%}}
 #clock{font-variant-numeric:tabular-nums;color:var(--tx);font-weight:700}
-.stats{padding:6px 0 22px}
+.stats{padding:46px 0 10px}
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--ac);border-radius:12px;padding:16px 14px;text-align:center}
 .stat b{display:block;font-size:clamp(1.3rem,4.2vw,2.1rem);line-height:1.15;font-variant-numeric:tabular-nums}
@@ -128,14 +128,6 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
   </div>
 </div>
 
-<section id="canal" class="stats"><div class="wrap">
-  <div class="stats-grid" aria-label="Resumo do canal">
-    <div class="stat"><b id="stSubs">--</b><span>Inscritos</span></div>
-    <div class="stat"><b id="stViews">--</b><span>Visualizações</span></div>
-    <div class="stat"><b id="stVids">--</b><span>Vídeos</span></div>
-  </div>
-</div></section>
-
 <section id="aovivo" class="live-sec"><div class="wrap">
   <h2>Ao vivo agora <span id="liveCount" style="color:var(--mut);font-size:.9rem;font-weight:400"></span></h2>
   <div class="live-grid" id="liveGrid"><p style="color:var(--mut)">Verificando lives…</p></div>
@@ -158,6 +150,15 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
     <div class="box"><b>REC</b><span>Código IATA</span></div>
     <div class="box"><b>Recife – PE</b><span>Aeroporto Internacional dos Guararapes</span></div>
     <div class="box"><b>METAR</b><span><a id="metarLink" target="_blank" rel="noopener" style="color:var(--ac)">Ver condições atuais →</a></span></div>
+  </div>
+</div></section>
+
+<section id="canal" class="stats"><div class="wrap">
+  <h2>Estatísticas do canal</h2>
+  <div class="stats-grid" aria-label="Estatísticas do canal">
+    <div class="stat"><b id="stSubs">--</b><span>Inscritos</span></div>
+    <div class="stat"><b id="stViews">--</b><span>Visualizações totais</span></div>
+    <div class="stat"><b id="stVids">--</b><span>Vídeos publicados</span></div>
   </div>
 </div></section>
 
@@ -315,7 +316,7 @@ loadLives(); setInterval(loadLives,60000);
     const d = await r.json();
     const set = (id,v) => { $(id).textContent = v || "--"; };
     set("stSubs", d.inscritos); set("stViews", d.visualizacoes); set("stVids", d.videos);
-  } catch(e) { $("canal").style.display = "none"; }
+  } catch(e) { /* mantém "--" se a leitura falhar */ }
 })();
 </script>
 </body>
