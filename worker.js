@@ -247,11 +247,31 @@ async function stats(env) {
   }
 }
 
+/* ================= PAINEL (overlay) ================= */
+// Repassa GET /api/painel/<caminho> para o painel do overlay (evita o bloqueio http x https e o CORS no navegador).
+// Para trocar o endereço sem mexer no código: variável PAINEL_URL (Settings > Variables).
+const PAINEL_PADRAO = "http://45.70.219.12:3010";
+async function painel(env, caminho, search) {
+  const base = (env.PAINEL_URL || PAINEL_PADRAO).replace(/\/$/, "");
+  try {
+    const r = await ft(`${base}/${caminho}${search}`, { headers: { Accept: "application/json" } }, 8000);
+    if (!r.ok) throw new Error("painel " + r.status);
+    return new Response(await r.text(), {
+      status: 200,
+      headers: { "Content-Type": r.headers.get("content-type") || "application/json", "Cache-Control": "public, max-age=15" }
+    });
+  } catch (err) {
+    return send(502, { error: String(err) });
+  }
+}
+
 /* ================= ROTEAMENTO ================= */
 // Aceita /api/metar e também /.netlify/functions/metar (assim o index.html não precisa mudar).
 export default {
   async fetch(request, env) {
-    const { pathname } = new URL(request.url);
+    const { pathname, search } = new URL(request.url);
+    const pn = request.method === "GET" && pathname.match(/^\/api\/painel\/([\w\-./]*)$/);
+    if (pn && !pn[1].includes("..")) return painel(env, pn[1], search);
     const m = pathname.match(/^\/(?:api|\.netlify\/functions)\/(metar|live|videos|stats)\/?$/);
     if (m) {
       switch (m[1]) {
