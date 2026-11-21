@@ -117,15 +117,18 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 @media(max-width:720px){nav{display:none}.about{grid-template-columns:1fr}}
 .logo span{white-space:nowrap;color:var(--tx)}@media(max-width:520px){.logo span{font-size:.8rem}}
 
-/* ====== EFEITO DE ENTRADA AO ROLAR (estilo Apple) ====== */
-.js .rv:not(.in),.js .rv-group:not(.in)>*{opacity:0}
-.js .rv.in,.js .rv-group.in>*{animation:rvUp 1s cubic-bezier(.16,1,.3,1) backwards;animation-delay:var(--d,0s)}
-.js .rv-scale.in{animation-name:rvScale;animation-duration:1.2s}
+/* ====== EFEITO AO ROLAR (estilo Apple): aparece ao descer, some ao subir ====== */
+.js .rv,.js .rv-group>*{opacity:0;transform:translateY(44px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.js .rv-scale{transform:scale(.93) translateY(34px)}
+.js .rv.in,.js .rv-group.in>*{opacity:1;transform:none;transition-delay:var(--d,0s)}
 .js .rv-group>:nth-child(2){--d:.1s}.js .rv-group>:nth-child(3){--d:.2s}.js .rv-group>:nth-child(4){--d:.3s}
 .js .rv-group>:nth-child(5){--d:.4s}.js .rv-group>:nth-child(6){--d:.5s}.js .rv-group>:nth-child(n+7){--d:.6s}
-@keyframes rvUp{from{opacity:0;transform:translateY(44px)}}
-@keyframes rvScale{from{opacity:0;transform:scale(.93) translateY(34px)}}
-@media(prefers-reduced-motion:reduce){.js .rv:not(.in),.js .rv-group:not(.in)>*{opacity:1}.js .rv.in,.js .rv-group.in>*{animation:none}}
+/* depois de aparecer, devolve a resposta rápida do hover dos cards */
+.js .rv.done,.js .rv-group.done>*{transition:transform .18s ease,box-shadow .2s ease,opacity .9s;transition-delay:0s}
+.js .rv-group.in>.card:hover{transform:translateY(-3px)}
+.js .rv-group.in>.parc:hover{transform:translateY(-4px)}
+/* "reduzir movimento": só fade, sem deslocar */
+@media(prefers-reduced-motion:reduce){.js .rv,.js .rv-group>*,.js .rv-scale{transform:none}}
 </style>
 </head>
 <body>
@@ -361,10 +364,21 @@ loadLives(); setInterval(loadLives,60000);
   tag(".more"); tag(".about > div"); tag(".support"); tag("footer .wrap");
 
   const alvos=document.querySelectorAll(".rv, .rv-group");
-  if(!("IntersectionObserver" in window)){ alvos.forEach(e=>e.classList.add("in")); return; }
+  if(!("IntersectionObserver" in window)){ alvos.forEach(e=>e.classList.add("in","done")); return; }
+  const timers=new Map();
   const io=new IntersectionObserver((lista)=>{
-    lista.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add("in"); io.unobserve(x.target); } });
-  },{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+    lista.forEach(x=>{
+      const el=x.target;
+      if(x.intersectionRatio>=.12){            // entrou na tela: aparece
+        if(el.classList.contains("in")) return;
+        el.classList.add("in");
+        timers.set(el,setTimeout(()=>el.classList.add("done"),1800));
+      }else{                                    // saiu da tela: some (volta a aparecer ao rolar de novo)
+        clearTimeout(timers.get(el));
+        el.classList.remove("in","done");
+      }
+    });
+  },{threshold:[0,.12],rootMargin:"0px 0px -6% 0px"});
   alvos.forEach(e=>io.observe(e));
 })();
 </script>
