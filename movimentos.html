@@ -38,6 +38,7 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .hr small{display:block;font-size:.68rem;font-weight:600;color:var(--mut)}
 .main b{display:block;font-size:1rem;line-height:1.25}
 .main span{color:var(--mut);font-size:.84rem}
+.main span.rt{display:block;color:var(--tx);opacity:.85}
 .side{text-align:right;font-size:.8rem;color:var(--mut)}
 .side em{font-style:normal;display:inline-block;margin-top:3px;padding:2px 9px;border-radius:99px;background:#1a2540;color:var(--tx);font-weight:700}
 .side em.rw{background:var(--ac);color:#1a1200}
@@ -120,6 +121,13 @@ function hora(v) {
 }
 function ts(v) {
   if (v == null) return 0;
+  const hm = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(String(v));
+  if (hm) { // "22:10" -> usa o dia mais próximo de agora (Recife = UTC-3)
+    const off = -3 * 3600e3, agora = Date.now(), loc = new Date(agora + off);
+    let t = Date.UTC(loc.getUTCFullYear(), loc.getUTCMonth(), loc.getUTCDate(), +hm[1], +hm[2]) - off;
+    if (t - agora > 12 * 3600e3) t -= 864e5; else if (agora - t > 12 * 3600e3) t += 864e5;
+    return t;
+  }
   if (typeof v === "number" || /^\d+(\.\d+)?$/.test(String(v))) { v = Number(v); return v < 1e12 ? v * 1000 : v; }
   const t = new Date(String(v).replace(" ", "T")).getTime(); return isNaN(t) ? 0 : t;
 }
@@ -142,6 +150,19 @@ function achaHora(f, tipo) {
   const p = best[0];
   return { t: best[1], rot: reReal.test(p) ? "real" : reEst.test(p) ? "estimado" : reProg.test(p) ? "programado" : "" };
 }
+const CIAS = { AD: "Azul", LA: "LATAM", JJ: "LATAM", G3: "GOL", TP: "TAP", "2Z": "Voepass", CM: "Copa", AR: "Aerolíneas Argentinas", UX: "Air Europa", IB: "Iberia", AF: "Air France", KL: "KLM", DL: "Delta", AA: "American", UA: "United", TK: "Turkish", ET: "Ethiopian", QR: "Qatar", EK: "Emirates", AV: "Avianca", H2: "Sky", ZP: "Paranair" };
+const AERO = { A20N: "Airbus A320neo", A320: "Airbus A320", A21N: "Airbus A321neo", A321: "Airbus A321", A319: "Airbus A319", A332: "Airbus A330-200", A333: "Airbus A330-300", A339: "Airbus A330-900", A359: "Airbus A350-900", A35K: "Airbus A350-1000", B38M: "Boeing 737 MAX 8", B39M: "Boeing 737 MAX 9", B738: "Boeing 737-800", B737: "Boeing 737-700", B739: "Boeing 737-900", B744: "Boeing 747-400", B748: "Boeing 747-8", B772: "Boeing 777-200", B77W: "Boeing 777-300ER", B788: "Boeing 787-8", B789: "Boeing 787-9", E195: "Embraer E195", E295: "Embraer E195-E2", E190: "Embraer E190", E290: "Embraer E190-E2", E170: "Embraer E170", AT72: "ATR 72", AT76: "ATR 72-600", C208: "Cessna Caravan", B763: "Boeing 767-300", B762: "Boeing 767-200", MD11: "McDonnell Douglas MD-11" };
+const nomeCia = c => (c ? CIAS[String(c).toUpperCase()] || c : c);
+const nomeAero = c => (c ? AERO[String(c).toUpperCase()] || c : c);
+
+// "Rio De Janeiro, RJ GIG Scheduled" -> "Rio De Janeiro, RJ (GIG)"
+function cidade(s) {
+  s = String(s || "").replace(/\s+(Scheduled|Estimated|Delayed|Departed.*|Landed.*|Arrived.*|Cancell?ed|Diverted|Unknown)\s*$/i, "").trim();
+  const m = /^(.*?)(?:,\s*([A-Z]{2}))?\s+([A-Z]{3})$/.exec(s);
+  if (!m) return s;
+  return m[1].trim() + (m[2] ? ", " + m[2] : "") + " (" + m[3] + ")";
+}
+
 function item(o, tipo) {
   const f = achata(o);
   const get = (re, pref) => {
@@ -149,19 +170,24 @@ function item(o, tipo) {
     const pf = pref && c.find(([p]) => pref.test(p));
     return (pf || c[0] || [])[1] || null;
   };
-  const h = achaHora(f, tipo);
+  // horário: estimado, senão programado, senão procura em qualquer lugar
+  let t = pick(o, ["est", "estimado"]), rot = t ? "estimado" : "";
+  if (!t) { t = pick(o, ["sched", "programado"]); rot = t ? "programado" : ""; }
+  if (!t) { const h = achaHora(f, tipo); t = h.t; rot = h.rot; }
   let st = pick(o, ["status", "situacao", "situação", "estado"]);
-  if (st && typeof st === "object") st = st.text || st.status || (st.generic && st.generic.status && st.generic.status.text) || null;
+  if (st && typeof st === "object") st = st.text || st.status || null;
   if (!st) st = get(/(^|\.)status(\.text)?$/);
+  const city = pick(o, ["city", "cidade"]);
   const orig = get(/(^|\.)(origem|origin|orig|from|de)(\.|$)/, /(iata|code|icao|codigo)$/);
   const dest = get(/(^|\.)(destino|destination|dest|to|para)(\.|$)/, /(iata|code|icao|codigo)$/);
+  const aero = pick(o, ["type", "aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type"]) || get(/aircraft|aeronave|modelo|equip/, /(code|model|type|text|name)$/);
   return {
-    t: h.t, rot: h.rot, ts: ts(h.t),
+    t, rot, ts: ts(t),
     voo: pick(o, ["voo", "flight", "callsign", "numero_voo", "flightnumber", "ident"]),
-    cia: pick(o, ["cia", "companhia", "airline", "operador", "operator"]),
+    cia: nomeCia(pick(o, ["cia", "companhia", "airline", "operador", "operator"])),
     reg: pick(o, ["matricula", "registro", "registration", "prefixo", "reg", "tail"]),
-    aero: pick(o, ["aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type"]) || get(/aircraft|aeronave|modelo|equip/, /(code|model|type|text|name)$/),
-    rota: orig && dest ? orig + " → " + dest : (orig || dest),
+    aero: nomeAero(typeof aero === "string" ? aero : null),
+    rota: city ? cidade(city) : (orig && dest ? orig + " → " + dest : (orig || dest)),
     rwy: pick(o, ["cabeceira", "pista", "runway", "rwy"]) || get(/cabeceira|pista|runway|rwy/),
     status: typeof st === "string" ? st : null
   };
@@ -203,12 +229,13 @@ function linha(o, cls, rotulo) {
   const x = item(o, cls);
   const rot = rotulo === "previsto" && x.rot ? x.rot : rotulo;
   const titulo = [x.voo, x.cia].filter(Boolean).join(" · ") || x.reg || "Aeronave";
-  const sub = [x.reg && x.voo ? x.reg : null, x.aero, x.rota].filter(Boolean).join(" · ");
+  const trecho = x.rota ? (cls === "pou" ? "de " : "para ") + x.rota : null;
+  const sub = [x.reg, x.aero].filter(Boolean).join(" · ");
   const st = traduz(x.status);
   const atr = /atrasad|cancel|desvi/i.test(st) ? " atr" : "";
   return `<div class="row ${cls}">
     <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${esc(rot)}</small></div>
-    <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span></div>
+    <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span>${trecho ? `<span class="rt">${esc(trecho)}</span>` : ""}</div>
     <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${st ? `<br><em class="${atr}">${esc(st)}</em>` : ""}</div>
   </div>`;
 }
