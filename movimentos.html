@@ -283,10 +283,34 @@ async function busca(url) {
   }
   return r.json();
 }
+
+/* ====== DIAGNÓSTICO (só aparece em /movimentos?debug=1) ======
+   Guarda o último voo recebido do /flights (a lista some quando o avião sai da área) e mostra o texto cru no fim da página. */
+const DEBUG = /[?&]debug\b/.test(location.search);
+function depura(h, p) {
+  if (!DEBUG) return;
+  let box = $("dbg");
+  if (!box) {
+    box = document.createElement("pre"); box.id = "dbg";
+    box.style.cssText = "max-width:1060px;margin:30px auto;padding:16px;background:#0b1328;border:1px solid #1d2d4d;border-radius:12px;color:#cfd8ee;font-size:.75rem;white-space:pre-wrap;word-break:break-word;overflow:auto";
+    document.body.insertBefore(box, document.querySelector("footer"));
+  }
+  const sep = separa(h);
+  const novos = [...sep.pou.map(o => ({ lista: "arrivals", item: o })), ...sep.dec.map(o => ({ lista: "departures", item: o }))];
+  let ult = null;
+  try { ult = JSON.parse(localStorage.getItem("dbg_flights") || "null"); } catch (e) {}
+  if (novos.length) { ult = { quando: new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso }), itens: novos.slice(0, 3) }; try { localStorage.setItem("dbg_flights", JSON.stringify(ult)); } catch (e) {} }
+  const sch = separa(p || h);
+  box.textContent = "== ÚLTIMO VOO RECEBIDO EM /api/flights (vazio = ainda não apareceu nenhum) ==\n" + (ult ? JSON.stringify(ult, null, 1) : "nenhum até agora — deixe esta página aberta") +
+    "\n\n== PRIMEIRO ITEM DE schedules (arrivals) ==\n" + JSON.stringify(sch.pou[0] || null, null, 1) +
+    "\n\n== PRIMEIRO ITEM DE schedules (departures) ==\n" + JSON.stringify(sch.dec[0] || null, null, 1);
+}
+
 async function carregar() {
   const st = $("status");
   try {
     const [h, p] = await Promise.all([busca(CONFIG.historico), CONFIG.proximos === CONFIG.historico ? null : busca(CONFIG.proximos)]);
+    depura(h, p);
     const hist = p ? separa(h) : { pou: [], dec: [] };
     const prox = separa(p || h);
     const feito = tipo => o => RE_FEITO.test(String(item(o, tipo).status || ""));
