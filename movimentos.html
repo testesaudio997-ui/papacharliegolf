@@ -32,8 +32,10 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}}
 .list{display:grid;gap:10px}
-.row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:12px;padding:12px 16px}
+.row{display:grid;grid-template-columns:auto auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:12px;padding:12px 16px}
 .row.pou{border-left-color:var(--grn)}.row.dec{border-left-color:var(--blu)}
+.lg{width:40px;height:40px;border-radius:9px;background:#fff;object-fit:contain;padding:3px;display:block}
+.lg0{display:inline-flex;align-items:center;justify-content:center;background:#1a2540;color:var(--mut);font-size:.72rem;font-weight:800;padding:0}
 .hr{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:62px}
 .hr small{display:block;font-size:.68rem;font-weight:600;color:var(--mut)}
 .main b{display:block;font-size:1rem;line-height:1.25}
@@ -50,14 +52,13 @@ footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var
 <body>
 <header><div class="wrap">
   <a href="/" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
-  <nav><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/voos.html">Chegadas e saídas</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
+  <nav><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
 </div></header>
 
 <main class="wrap">
   <div class="hero">
     <h1>Pousos e <span>decolagens</span></h1>
-    <p>Aeroporto Internacional do Recife (SBRF) · horário de Recife</p>
-    <div id="status"><i></i><span>Carregando…</span></div>
+        <div id="status"><i></i><span>Carregando…</span></div>
   </div>
 
   <section>
@@ -184,6 +185,7 @@ function item(o, tipo) {
   return {
     t, rot, ts: ts(t),
     voo: pick(o, ["voo", "flight", "callsign", "numero_voo", "flightnumber", "ident"]),
+    cod: pick(o, ["cia", "companhia", "airline", "operador", "operator"]),
     cia: nomeCia(pick(o, ["cia", "companhia", "airline", "operador", "operator"])),
     reg: pick(o, ["matricula", "registro", "registration", "prefixo", "reg", "tail"]),
     aero: nomeAero(typeof aero === "string" ? aero : null),
@@ -224,6 +226,25 @@ function separa(d) {
   return { pou: acha(raiz, RE_POU), dec: acha(raiz, RE_DEC) };
 }
 
+
+/* ====== LOGOS DAS COMPANHIAS (código IATA) ======
+   Tenta a 1ª fonte; se falhar, a 2ª; se falhar, mostra o código em um selo. Lembra qual funcionou. */
+const FONTES = [c => `https://images.kiwi.com/airlines/64x64/${c}.png`, c => `https://pics.avs.io/64/64/${c}.png`];
+const LOGO = {};
+function logo(cod) {
+  const c = String(cod || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!c) return '<span class="lg lg0">✈</span>';
+  const i = LOGO[c] ?? 0;
+  if (i >= FONTES.length) return `<span class="lg lg0">${esc(c)}</span>`;
+  return `<img class="lg" src="${FONTES[i](c)}" alt="${esc(c)}" data-c="${c}" data-i="${i}" onload="LOGO[this.dataset.c]=+this.dataset.i" onerror="logoErro(this)">`;
+}
+function logoErro(img) {
+  const c = img.dataset.c, i = +img.dataset.i + 1;
+  LOGO[c] = i;
+  if (i < FONTES.length) { img.dataset.i = i; img.src = FONTES[i](c); return; }
+  const sp = document.createElement("span"); sp.className = "lg lg0"; sp.textContent = c; img.replaceWith(sp);
+}
+
 /* ====== TELA ====== */
 function linha(o, cls, rotulo) {
   const x = item(o, cls);
@@ -235,6 +256,7 @@ function linha(o, cls, rotulo) {
   const atr = /atrasad|cancel|desvi/i.test(st) ? " atr" : "";
   return `<div class="row ${cls}">
     <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${esc(rot)}</small></div>
+    ${logo(x.cod)}
     <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span>${trecho ? `<span class="rt">${esc(trecho)}</span>` : ""}</div>
     <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${st ? `<br><em class="${atr}">${esc(st)}</em>` : ""}</div>
   </div>`;
