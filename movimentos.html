@@ -63,14 +63,14 @@ footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var
 
   <section>
     <div class="cols">
-      <div><h2 class="pou">Próximos pousos</h2><div class="list" id="proxPou"></div></div>
-      <div><h2 class="dec">Próximas decolagens</h2><div class="list" id="proxDec"></div></div>
+      <div><h2 class="pou">Últimos pousos</h2><div class="list" id="ultPou"></div></div>
+      <div><h2 class="dec">Últimas decolagens</h2><div class="list" id="ultDec"></div></div>
     </div>
   </section>
   <section>
     <div class="cols">
-      <div><h2 class="pou">Últimos pousos</h2><div class="list" id="ultPou"></div></div>
-      <div><h2 class="dec">Últimas decolagens</h2><div class="list" id="ultDec"></div></div>
+      <div><h2 class="pou">Próximos pousos</h2><div class="list" id="proxPou"></div></div>
+      <div><h2 class="dec">Próximas decolagens</h2><div class="list" id="proxDec"></div></div>
     </div>
   </section>
 </main>
@@ -265,7 +265,7 @@ function desenha(id, lista, cls, rotulo, ordem, vazio) {
   const el = $(id);
   const arr = lista.map(o => ({ o, k: item(o, cls).ts }));
   if (arr.some(a => a.k)) arr.sort((a, b) => ordem === "desc" ? b.k - a.k : a.k - b.k);
-  el.innerHTML = arr.length ? arr.slice(0, 8).map(a => linha(a.o, cls, rotulo)).join("") : `<div class="empty">${vazio}</div>`;
+  el.innerHTML = arr.length ? arr.slice(0, 4).map(a => linha(a.o, cls, rotulo)).join("") : `<div class="empty">${vazio}</div>`;
 }
 async function busca(url) {
   if (!url) return null;
