@@ -217,7 +217,7 @@ main,footer{position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){.xmas-santa{animation-duration:36s}}
 
 /* ====== CAIXA FLUTUANTE: MOVIMENTAÇÕES ATÍPICAS ====== */
-.atip{position:fixed;right:20px;bottom:20px;z-index:50;width:min(340px,calc(100vw - 32px));background:rgba(15,26,48,.97);border:1px solid var(--line);border-top:3px solid var(--ac);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.55);backdrop-filter:blur(8px);opacity:0;transform:translateY(24px) scale(.97);visibility:hidden;transition:opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1),visibility .45s}
+.atip{position:fixed;right:20px;bottom:20px;z-index:50;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow-y:auto;background:rgba(15,26,48,.97);border:1px solid var(--line);border-top:3px solid var(--ac);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.55);backdrop-filter:blur(8px);opacity:0;transform:translateY(24px) scale(.97);visibility:hidden;transition:opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1),visibility .45s}
 .atip.on{opacity:1;transform:none;visibility:visible}
 .atip-h{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
 .atip-h b{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);flex:1;line-height:1.3}
@@ -237,6 +237,31 @@ main,footer{position:relative;z-index:1}
 .atip-tab:hover{background:var(--ac);color:#1a1200}
 @media(max-width:520px){.atip,.atip-tab{right:16px;bottom:16px}}
 @media(prefers-reduced-motion:reduce){.atip{transition:opacity .2s,visibility .2s;transform:none}}
+
+/* movimento (overlay) dentro da caixa flutuante */
+.ax{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ax-t{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.ax-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.ax-tabs button{padding:8px 6px;border-radius:8px;border:1px solid var(--line);background:#0b1328;color:var(--mut);font-weight:700;font-size:.82rem;cursor:pointer}
+.ax-tabs button.on{background:var(--ac);border-color:var(--ac);color:#1a1200}
+.ax-tabs button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ax-sub{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:10px 0 5px}
+.ax-sub:first-child{margin-top:0}
+.ax-row{display:grid;grid-template-columns:auto auto 1fr;gap:10px;align-items:center;background:#0b1328;border:1px solid var(--line);border-left:3px solid #3ddc84;border-radius:10px;padding:9px 10px}
+.ax-row.dec{border-left-color:#4da3ff}
+.ax-hr{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:48px;line-height:1.1}
+.ax-hr small{display:block;font-size:.6rem;font-weight:600;color:var(--mut)}
+.ax-lg{width:34px;height:34px;border-radius:8px;background:#fff;object-fit:contain;padding:3px;display:block}
+.ax-lg0{display:inline-flex;align-items:center;justify-content:center;background:#1a2540;color:var(--mut);font-size:.65rem;font-weight:800;padding:0}
+.ax-main{min-width:0}
+.ax-main b{display:block;font-size:.88rem;line-height:1.25}
+.ax-main span{display:block;color:var(--mut);font-size:.76rem;line-height:1.3}
+.ax-main span.ax-rt{color:var(--tx);opacity:.85}
+.ax-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.ax-chips em{font-style:normal;padding:1px 8px;border-radius:99px;background:#1a2540;color:var(--tx);font-weight:700;font-size:.68rem}
+.ax-chips em.rw{background:var(--ac);color:#1a1200}
+.ax-chips em.atr{background:#4a1c1c;color:#ffb4b4}
+.ax-vazio{color:var(--mut);font-size:.82rem;border:1px dashed var(--line);border-radius:10px;padding:9px 10px;text-align:center}
 </style>
 </head>
 <body>
@@ -354,6 +379,11 @@ main,footer{position:relative;z-index:1}
   <div class="atip-b">
     <div class="atip-prox" id="atipProx"></div>
     <div class="atip-ult" id="atipUlt"></div>
+    <div class="ax" id="ax">
+      <div class="ax-t">Movimento em SBRF · ao vivo</div>
+      <div class="ax-tabs" role="tablist"><button type="button" role="tab" class="on" data-t="pou">Pousos</button><button type="button" role="tab" data-t="dec">Decolagens</button></div>
+      <div id="axList"><p class="ax-vazio">Carregando…</p></div>
+    </div>
   </div>
 </aside>
 <button type="button" class="atip-tab" id="atipTab" aria-label="Abrir movimentações atípicas">✈ Movimentações atípicas</button>
@@ -570,6 +600,182 @@ loadLives(); setInterval(loadLives,60000);
   tab.onclick=()=>{ abre(true); grava(false); };
   document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&box.classList.contains("on")){ abre(false); grava(true); } });
   if(lido()) abre(false); else setTimeout(()=>abre(true),1500);
+})();
+</script>
+<script>
+/* ====== MOVIMENTO DO OVERLAY NA CAIXA FLUTUANTE (mesmos dados da página /movimentos) ====== */
+(function(){
+  const FUSO="America/Recife", URL_H="/api/painel/api/flights", URL_P="/api/painel/api/schedules", MS=30000;
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const RE_POU=/pous|land|arriv|chega|\barr\b/i, RE_DEC=/decol|take|depart|parte|part|saida|saída|\bdep\b/i;
+  const RE_FEITO=/departed|landed|arrived|took ?off|decolou|pousou|chegou/i;
+  const norm=k=>String(k).toLowerCase().normalize("NFD").replace(/[̀-ͯ_\-\s]/g,"");
+  function pick(o,nomes){const m={};for(const k in o)m[norm(k)]=o[k];for(const n of nomes){const v=m[norm(n)];if(v!==undefined&&v!==null&&v!=="")return v;}return null;}
+  function achata(o,pre="",d=0,out=[]){
+    if(o===null||o===undefined||d>5)return out;
+    if(typeof o!=="object"){out.push([pre.toLowerCase(),o]);return out;}
+    if(Array.isArray(o)){o.slice(0,5).forEach((v,i)=>achata(v,pre+"."+i,d+1,out));return out;}
+    for(const k in o)achata(o[k],pre?pre+"."+k:k,d+1,out);return out;
+  }
+  const ehTempo=v=>(typeof v==="number"&&v>1e9&&v<1e13)||(typeof v==="string"&&(/^\d{9,13}$/.test(v)||/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v)||/^\d{1,2}:\d{2}(:\d{2})?$/.test(v)));
+  const B=w=>new RegExp("(^|[._])("+w+")([._]|$)");
+  function hora(v){
+    if(v==null)return "";let d;
+    if(typeof v==="number"||/^\d+(\.\d+)?$/.test(String(v))){v=Number(v);d=new Date(v<1e12?v*1000:v);}
+    else if(/^\d{1,2}:\d{2}/.test(String(v)))return String(v).slice(0,5);
+    else d=new Date(String(v).replace(" ","T"));
+    return isNaN(d)?String(v):d.toLocaleTimeString("pt-BR",{timeZone:FUSO,hour:"2-digit",minute:"2-digit"});
+  }
+  function ts(v){
+    if(v==null)return 0;
+    const hm=/^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(String(v));
+    if(hm){const off=-3*3600e3,agora=Date.now(),loc=new Date(agora+off);
+      let t=Date.UTC(loc.getUTCFullYear(),loc.getUTCMonth(),loc.getUTCDate(),+hm[1],+hm[2])-off;
+      if(t-agora>12*3600e3)t-=864e5;else if(agora-t>12*3600e3)t+=864e5;return t;}
+    if(typeof v==="number"||/^\d+(\.\d+)?$/.test(String(v))){v=Number(v);return v<1e12?v*1000:v;}
+    const t=new Date(String(v).replace(" ","T")).getTime();return isNaN(t)?0:t;
+  }
+  function achaHora(f,tipo){
+    const lista=f.filter(([p,v])=>ehTempo(v)&&!/updat|fetch|collect|refresh|atualiz/.test(p));
+    if(!lista.length)return{t:null,rot:""};
+    const reChega=new RegExp(B("arriv\\w*|chega\\w*|pouso|landing|sta|eta").source),reSai=new RegExp(B("depart\\w*|saida|decol\\w*|takeoff|std|etd").source);
+    const mine=tipo==="pou"?reChega:reSai,other=tipo==="pou"?reSai:reChega;
+    const reReal=/real|actual|atual|efetiv/,reEst=/estimat|estimad|expect|previs|(^|[._])(eta|etd)([._]|$)/,reProg=/sched|program|(^|[._])(sta|std)([._]|$)/;
+    let best=null,bs=-1e9;
+    lista.forEach(([p,v],i)=>{let s=0;
+      if(mine.test(p))s+=10;if(other.test(p))s-=10;
+      if(reReal.test(p))s+=6;else if(reEst.test(p))s+=4;else if(reProg.test(p))s+=2;
+      if(/creat|criad|(^|[._])(at|ts|time|when|hora|horario|data|date)([._]|$)/.test(p))s+=1;
+      s-=i*0.01;if(s>bs){bs=s;best=[p,v];}});
+    const p=best[0];
+    return{t:best[1],rot:reReal.test(p)?"real":reEst.test(p)?"estimado":reProg.test(p)?"programado":""};
+  }
+  const CIAS={AD:"Azul",LA:"LATAM",JJ:"LATAM",TAM:"LATAM",LAN:"LATAM",LP:"LATAM",XL:"LATAM",G3:"GOL",TP:"TAP","2Z":"Voepass",CM:"Copa",AR:"Aerolíneas Argentinas",UX:"Air Europa",IB:"Iberia",AF:"Air France",KL:"KLM",DL:"Delta",AA:"American",UA:"United",TK:"Turkish",ET:"Ethiopian",QR:"Qatar",EK:"Emirates",AV:"Avianca",H2:"Sky",ZP:"Paranair"};
+  const AERO={A20N:"Airbus A320neo",A320:"Airbus A320",A21N:"Airbus A321neo",A321:"Airbus A321",A319:"Airbus A319",A332:"Airbus A330-200",A333:"Airbus A330-300",A339:"Airbus A330-900",A359:"Airbus A350-900",A35K:"Airbus A350-1000",B38M:"Boeing 737 MAX 8",B39M:"Boeing 737 MAX 9",B738:"Boeing 737-800",B737:"Boeing 737-700",B739:"Boeing 737-900",B744:"Boeing 747-400",B748:"Boeing 747-8",B772:"Boeing 777-200",B77W:"Boeing 777-300ER",B788:"Boeing 787-8",B789:"Boeing 787-9",E195:"Embraer E195",E295:"Embraer E195-E2",E190:"Embraer E190",E290:"Embraer E190-E2",E170:"Embraer E170",AT72:"ATR 72",AT76:"ATR 72-600",C208:"Cessna Caravan",B763:"Boeing 767-300",B762:"Boeing 767-200",MD11:"McDonnell Douglas MD-11"};
+  const nomeCia=c=>(c?CIAS[String(c).toUpperCase()]||c:c);
+  const nomeAero=c=>(c?AERO[String(c).toUpperCase()]||c:c);
+  function cidade(s){
+    s=String(s||"").replace(/\s+(Scheduled|Estimated|Delayed|Departed.*|Landed.*|Arrived.*|Cancell?ed|Diverted|Unknown)\s*$/i,"").trim();
+    const m=/^(.*?)(?:,\s*([A-Z]{2}))?\s+([A-Z]{3})$/.exec(s);
+    if(!m)return s;return m[1].trim()+(m[2]?", "+m[2]:"")+" ("+m[3]+")";
+  }
+  function item(o,tipo){
+    const f=achata(o);
+    const get=(re,pref)=>{const c=f.filter(([p,v])=>re.test(p)&&typeof v==="string"&&v&&v.length<=40&&!ehTempo(v));const pf=pref&&c.find(([p])=>pref.test(p));return(pf||c[0]||[])[1]||null;};
+    let t=pick(o,["est","estimado"]),rot=t?"estimado":"";
+    if(!t){t=pick(o,["sched","programado"]);rot=t?"programado":"";}
+    if(!t){const h=achaHora(f,tipo);t=h.t;rot=h.rot;}
+    let st=pick(o,["status","situacao","situação","estado"]);
+    if(st&&typeof st==="object")st=st.text||st.status||null;
+    if(!st)st=get(/(^|\.)status(\.text)?$/);
+    const city=pick(o,["city","cidade"]);
+    const orig=get(/(^|\.)(origem|origin|orig|from|de)(\.|$)/,/(iata|code|icao|codigo)$/);
+    const dest=get(/(^|\.)(destino|destination|dest|to|para)(\.|$)/,/(iata|code|icao|codigo)$/);
+    const isREC=v=>/^(REC|SBRF)\b/i.test(String(v||"").trim());
+    const rotaTxt=city?{t:cidade(city),pre:true}
+      :orig&&dest?(isREC(orig)?{t:dest,pre:true}:isREC(dest)?{t:orig,pre:true}:{t:orig+" → "+dest,pre:false})
+      :{t:orig||dest,pre:true};
+    const aero=pick(o,["type","aeronave","modelo","aircraft","tipo_aeronave","icao_type"])||get(/aircraft|aeronave|modelo|equip/,/(code|model|type|text|name)$/);
+    return{t,rot,ts:ts(t),
+      voo:pick(o,["voo","flight","callsign","numero_voo","flightnumber","ident"]),
+      cod:pick(o,["cia","companhia","airline","operador","operator"]),
+      cia:nomeCia(pick(o,["cia","companhia","airline","operador","operator"])),
+      reg:pick(o,["matricula","registro","registration","prefixo","reg","tail"]),
+      aero:nomeAero(typeof aero==="string"?aero:null),
+      rota:rotaTxt.t,rotaPre:rotaTxt.pre,
+      rwy:pick(o,["cabeceira","pista","runway","rwy"])||get(/cabeceira|pista|runway|rwy/),
+      status:typeof st==="string"?st:null};
+  }
+  function traduz(s){
+    s=String(s||"").trim();if(!s)return "";
+    return s.replace(/(\d+)\s*h\s*(\d+)\s*m(?:in)?\s*ago/i,"há $1h$2min").replace(/(\d+)\s*m(?:in)?\s*ago/i,"há $1 min").replace(/(\d+)\s*h\s*ago/i,"há $1 h").replace(/(\d+)\s*d\s*ago/i,"há $1 d")
+      .replace(/\bDeparted\b/i,"Decolou").replace(/\bLanded\b/i,"Pousou").replace(/\bArrived\b/i,"Chegou")
+      .replace(/\bDelayed\b/i,"Atrasado").replace(/\bScheduled\b/i,"Programado").replace(/\bEstimated\b/i,"Previsto")
+      .replace(/\bCancell?ed\b/i,"Cancelado").replace(/\bDiverted\b/i,"Desviado").replace(/\bOn time\b/i,"No horário")
+      .replace(/\bEn route\b/i,"Em rota").replace(/\bAirborne\b/i,"No ar").replace(/\bBoarding\b/i,"Embarque")
+      .replace(/\bTaxiing\b/i,"Taxiando").replace(/\bEarly\b/i,"Adiantado").replace(/\bUnknown\b/i,"Indefinido");
+  }
+  function acha(d,re){if(!d||typeof d!=="object")return[];for(const k in d)if(re.test(k)&&Array.isArray(d[k]))return d[k];return[];}
+  function separa(d){
+    if(Array.isArray(d)){const r={pou:[],dec:[]};
+      d.forEach(o=>{const tp=String(pick(o,["tipo","type","movimento","evento","event","operacao","operação","kind"])||"");(RE_DEC.test(tp)&&!RE_POU.test(tp)?r.dec:r.pou).push(o);});return r;}
+    const raiz=d&&(d.data||d.dados||d.result||d);
+    if(Array.isArray(raiz))return separa(raiz);
+    return{pou:acha(raiz,RE_POU),dec:acha(raiz,RE_DEC)};
+  }
+
+  /* logos das companhias (código IATA): 1ª fonte, 2ª fonte, depois selo com o código */
+  const FONTES=[c=>`https://images.kiwi.com/airlines/64x64/${c}.png`,c=>`https://pics.avs.io/64/64/${c}.png`];
+  const LOGO={};
+  const LOGO_ALIAS={JJ:"LA",TAM:"LA",LAN:"LA",LP:"LA",XL:"LA","4M":"LA",LU:"LA",JA:"LA"};
+  function logo(cod){
+    let c=String(cod||"").toUpperCase().replace(/[^A-Z0-9]/g,"");c=LOGO_ALIAS[c]||c;
+    if(!c)return '<span class="ax-lg ax-lg0">✈</span>';
+    const i=LOGO[c]??0;
+    if(i>=FONTES.length)return `<span class="ax-lg ax-lg0">${esc(c)}</span>`;
+    return `<img class="ax-lg" src="${FONTES[i](c)}" alt="${esc(c)}" data-c="${c}" data-i="${i}">`;
+  }
+  function ligaLogos(raiz){
+    raiz.querySelectorAll("img.ax-lg").forEach(img=>{
+      img.addEventListener("load",()=>{LOGO[img.dataset.c]=+img.dataset.i;});
+      img.addEventListener("error",()=>{
+        const c=img.dataset.c,i=+img.dataset.i+1;LOGO[c]=i;
+        if(i<FONTES.length){img.dataset.i=i;img.src=FONTES[i](c);return;}
+        const sp=document.createElement("span");sp.className="ax-lg ax-lg0";sp.textContent=c;img.replaceWith(sp);
+      });
+    });
+  }
+
+  function linha(o,cls,rotulo){
+    const x=item(o,cls);
+    const rot=rotulo==="previsto"&&x.rot?x.rot:rotulo;
+    const titulo=[x.voo,x.cia].filter(Boolean).join(" · ")||x.reg||"Aeronave";
+    const trecho=x.rota?(x.rotaPre?(cls==="pou"?"de ":"para "):"")+x.rota:null;
+    const sub=[x.reg,x.aero].filter(Boolean).join(" · ");
+    const st=traduz(x.status), atr=/atrasad|cancel|desvi/i.test(st)?" atr":"";
+    const chips=(x.rwy||st)?`<div class="ax-chips">${x.rwy?`<em class="rw">Cab. ${esc(x.rwy)}</em>`:""}${st?`<em class="${atr.trim()}">${esc(st)}</em>`:""}</div>`:"";
+    return `<div class="ax-row ${cls}"><div class="ax-hr">${esc(hora(x.t))||"--:--"}<small>${esc(rot)}</small></div>${logo(x.cod)}<div class="ax-main"><b>${esc(titulo)}</b>${sub?`<span>${esc(sub)}</span>`:""}${trecho?`<span class="ax-rt">${esc(trecho)}</span>`:""}${chips}</div></div>`;
+  }
+  const ordena=(lista,cls,ordem)=>{
+    const arr=lista.map(o=>({o,k:item(o,cls).ts}));
+    if(arr.some(a=>a.k))arr.sort((a,b)=>ordem==="desc"?b.k-a.k:a.k-b.k);
+    return arr.map(a=>a.o);
+  };
+
+  let dados=null, aba="pou";
+  const lista=$("axList"); if(!lista) return;
+  function desenha(){
+    if(!dados){return;}
+    const d=dados[aba], nome=aba==="pou"?"pouso":"decolagem", rotUlt=aba==="pou"?"pousou":"decolou";
+    const ult=d.ult[0], prox=d.prox[0];
+    lista.innerHTML=
+      `<div class="ax-sub">Último ${nome}</div>`+(ult?linha(ult,aba,rotUlt):`<div class="ax-vazio">Nenhum${aba==="pou"?"":"a"} ${nome} registrad${aba==="pou"?"o":"a"} ainda.</div>`)+
+      `<div class="ax-sub">Próximo ${nome}</div>`+(prox?linha(prox,aba,"previsto"):`<div class="ax-vazio">Sem ${aba==="pou"?"pousos previstos":"decolagens previstas"} no momento.</div>`);
+    ligaLogos(lista);
+  }
+  document.querySelectorAll(".ax-tabs button").forEach(b=>b.addEventListener("click",()=>{
+    aba=b.dataset.t;
+    document.querySelectorAll(".ax-tabs button").forEach(x=>x.classList.toggle("on",x===b));
+    desenha();
+  }));
+
+  async function busca(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error(url+" "+r.status);return r.json();}
+  async function carregar(){
+    try{
+      const [h,p]=await Promise.all([busca(URL_H),busca(URL_P)]);
+      const hist=separa(h), prox=separa(p);
+      const feito=tipo=>o=>RE_FEITO.test(String(item(o,tipo).status||""));
+      dados={
+        pou:{ult:ordena([...hist.pou,...prox.pou.filter(feito("pou"))],"pou","desc"),prox:ordena(prox.pou.filter(o=>!feito("pou")(o)),"pou","asc")},
+        dec:{ult:ordena([...hist.dec,...prox.dec.filter(feito("dec"))],"dec","desc"),prox:ordena(prox.dec.filter(o=>!feito("dec")(o)),"dec","asc")}
+      };
+      desenha();
+    }catch(e){
+      if(!dados) lista.innerHTML='<div class="ax-vazio">Dados de voos indisponíveis no momento.</div>';
+    }
+  }
+  carregar(); setInterval(carregar,MS);
 })();
 </script>
 <script>
