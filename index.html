@@ -215,6 +215,28 @@ header.open .menu-btn i::after{transform:translateY(-6px) rotate(-45deg)}
 @keyframes bob{from{transform:translateY(-10px) rotate(-1.5deg)}to{transform:translateY(12px) rotate(1.5deg)}}
 main,footer{position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){.xmas-santa{animation-duration:36s}}
+
+/* ====== CAIXA FLUTUANTE: MOVIMENTAÇÕES ATÍPICAS ====== */
+.atip{position:fixed;right:20px;bottom:20px;z-index:50;width:min(340px,calc(100vw - 32px));background:rgba(15,26,48,.97);border:1px solid var(--line);border-top:3px solid var(--ac);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.55);backdrop-filter:blur(8px);opacity:0;transform:translateY(24px) scale(.97);visibility:hidden;transition:opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1),visibility .45s}
+.atip.on{opacity:1;transform:none;visibility:visible}
+.atip-h{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+.atip-h b{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);flex:1;line-height:1.3}
+.atip-x{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;font-size:1.1rem;line-height:1;padding:0}
+.atip-x:hover{color:var(--tx);border-color:var(--ac)}
+.atip-x:focus-visible,.atip-tab:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.atip-b{padding:0 14px 14px}
+.atip-prox{background:#0b1328;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;color:var(--mut);font-size:.9rem}
+.atip-prox span{display:block;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.atip-prox strong{color:var(--tx);font-size:.98rem}
+.atip-ult{margin-top:10px;background:#0b1328;border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:10px;padding:10px 12px}
+.atip-ult span{display:block;color:var(--mut);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.atip-ult b{display:block;font-size:1.25rem;letter-spacing:.04em;line-height:1.2}
+.atip-ult small{color:var(--tx);opacity:.85;font-size:.88rem}
+.atip-tab{position:fixed;right:20px;bottom:20px;z-index:49;display:none;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;border:1px solid var(--ac);background:rgba(15,26,48,.97);color:var(--ac);font-weight:700;font-size:.82rem;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.atip-tab.on{display:inline-flex}
+.atip-tab:hover{background:var(--ac);color:#1a1200}
+@media(max-width:520px){.atip,.atip-tab{right:16px;bottom:16px}}
+@media(prefers-reduced-motion:reduce){.atip{transition:opacity .2s,visibility .2s;transform:none}}
 </style>
 </head>
 <body>
@@ -327,6 +349,14 @@ main,footer{position:relative;z-index:1}
 </div></section>
 </main>
 
+<aside class="atip" id="atip" role="dialog" aria-label="Movimentações atípicas em SBRF" aria-live="polite">
+  <div class="atip-h"><b>Próximas movimentações atípicas em SBRF</b><button type="button" class="atip-x" id="atipX" aria-label="Fechar">×</button></div>
+  <div class="atip-b">
+    <div class="atip-prox" id="atipProx"></div>
+    <div class="atip-ult" id="atipUlt"></div>
+  </div>
+</aside>
+<button type="button" class="atip-tab" id="atipTab" aria-label="Abrir movimentações atípicas">✈ Movimentações atípicas</button>
 <footer><div class="wrap">Copyright © 2022 - <span id="ano">2026</span> Papa Charlie Golf. Todos os direitos reservados.</div></footer>
 
 <script>
@@ -514,6 +544,32 @@ loadLives(); setInterval(loadLives,60000);
   document.addEventListener("click",e=>{ if(!h.contains(e.target)) set(false); });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") set(false); });
   matchMedia("(min-width:721px)").addEventListener("change",e=>{ if(e.matches) set(false); });
+})();
+</script>
+<script>
+/* ====== CAIXA FLUTUANTE: MOVIMENTAÇÕES ATÍPICAS (edite aqui) ====== */
+(function(){
+  const ATIPICAS = {
+    proximas: [],   // ex.: [{matricula:"ER-BAR", cia:"FlyPro", aeronave:"Boeing 747-200F", quando:"21/11 · 14:30"}]
+    ultima: {matricula:"ER-BAR", cia:"FlyPro", aeronave:"Boeing 747-200F"}
+  };
+  const esc=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const box=document.getElementById("atip"), tab=document.getElementById("atipTab"); if(!box||!tab) return;
+  const p=ATIPICAS.proximas||[], u=ATIPICAS.ultima;
+  document.getElementById("atipProx").innerHTML = p.length
+    ? "<span>Próximas</span>"+p.map(x=>`<strong>${esc(x.matricula)}</strong> · ${esc(x.cia)} · ${esc(x.aeronave)}${x.quando?` · ${esc(x.quando)}`:""}`).join("<br>")
+    : "<span>Próximas</span><strong>Sem próximas movimentações</strong>";
+  document.getElementById("atipUlt").innerHTML = u
+    ? `<span>Última movimentação</span><b>${esc(u.matricula)}</b><small>${esc(u.cia)} · ${esc(u.aeronave)}</small>`
+    : "";
+  const KEY="atipFechada";
+  const lido=()=>{ try{return sessionStorage.getItem(KEY)==="1";}catch(e){return false;} };
+  const grava=v=>{ try{ v?sessionStorage.setItem(KEY,"1"):sessionStorage.removeItem(KEY); }catch(e){} };
+  const abre=o=>{ box.classList.toggle("on",o); tab.classList.toggle("on",!o); };
+  document.getElementById("atipX").onclick=()=>{ abre(false); grava(true); };
+  tab.onclick=()=>{ abre(true); grava(false); };
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&box.classList.contains("on")){ abre(false); grava(true); } });
+  if(lido()) abre(false); else setTimeout(()=>abre(true),1500);
 })();
 </script>
 <script>
