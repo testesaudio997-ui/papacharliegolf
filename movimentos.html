@@ -46,6 +46,16 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .side em{font-style:normal;display:inline-block;margin-top:3px;padding:2px 9px;border-radius:99px;background:#1a2540;color:var(--tx);font-weight:700}
 .side em.rw{background:var(--ac);color:#1a1200}
 .side em.atr{background:#4a1c1c;color:#ffb4b4}
+.side em.fase{background:#12361f;color:#8dffb0}
+.side em.fase.dec{background:#10304f;color:#9fd0ff}
+.side em.fase.hot::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;animation:pf 1s infinite}
+@keyframes pf{50%{opacity:.25}}
+.vals{display:grid;justify-items:end;margin:5px 0 4px;font-size:.82rem;color:var(--mut);font-variant-numeric:tabular-nums}
+.vals .v{grid-area:1/1;white-space:nowrap;transition:opacity .6s}
+.vals .v b{color:var(--tx)}
+.vals .v2{opacity:0}
+body.km .vals .v1{opacity:0}body.km .vals .v2{opacity:1}
+@media(prefers-reduced-motion:reduce){.side em.fase.hot::before{animation:none}.vals .v{transition:none}}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--mut);text-align:center;font-size:.92rem}
 footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var(--mut);font-size:.85rem;text-align:center}
 
@@ -232,7 +242,10 @@ header nav .dd-menu a:last-child{border-bottom:0}
 const CONFIG = {
   historico: "/api/painel/api/flights",   // últimos pousos e decolagens (banco do overlay)
   proximos:  "/api/painel/api/schedules",     // próximos pousos e decolagens
-  atualizarMs: 30000,
+  // aeronaves ao vivo (altitude, velocidade, no solo): caminho do painel que lista as aeronaves do feed ADS-B. Deixe null se não houver.
+  // Exemplo: aoVivo: "/api/painel/api/aircraft"
+  aoVivo: null,
+  atualizarMs: 15000,
   fuso: "America/Recife"
 };
 
@@ -335,8 +348,9 @@ function item(o, tipo) {
     : orig && dest ? (isREC(orig) ? { t: dest, pre: true } : isREC(dest) ? { t: orig, pre: true } : { t: orig + " → " + dest, pre: false })
     : { t: orig || dest, pre: true };
   const aero = pick(o, ["type", "aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type"]) || get(/aircraft|aeronave|modelo|equip/, /(code|model|type|text|name)$/);
+  const live = lerVivo(f);
   return {
-    t, rot, ts: ts(t),
+    t, rot, ts: ts(t), live,
     voo: pick(o, ["voo", "flight", "callsign", "numero_voo", "flightnumber", "ident"]),
     cod: pick(o, ["cia", "companhia", "airline", "operador", "operator"]),
     cia: nomeCia(pick(o, ["cia", "companhia", "airline", "operador", "operator"])),
@@ -400,10 +414,91 @@ function logoErro(img) {
   const sp = document.createElement("span"); sp.className = "lg lg0"; sp.textContent = c; img.replaceWith(sp);
 }
 
+/* ====== AO VIVO: fase, altitude e velocidade (alterna pés/nós e metros/km/h) ====== */
+const ICAO_IATA = { AZU: "AD", GLO: "G3", TAM: "JJ", LAN: "LA", LPE: "LA", TAP: "TP", PTB: "2Z", CMP: "CM", ARG: "AR", DAL: "DL", KLM: "KL", AFR: "AF", IBE: "IB", UAE: "EK", AAL: "AA", UAL: "UA" };
+const LATAM = ["LA", "JJ", "LP", "XL", "4M"];
+// "AZU2789" e "AD2789" são o mesmo voo (indicativo ICAO x IATA)
+function chaves(id) {
+  const s = String(id || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!s) return [];
+  const out = [s], m = /^([A-Z]{3})(\d+[A-Z]?)$/.exec(s);
+  if (m && ICAO_IATA[m[1]]) { const ia = ICAO_IATA[m[1]]; (ia === "LA" || ia === "JJ" ? LATAM : [ia]).forEach(c => out.push(c + m[2])); }
+  return out;
+}
+const numF = (f, re) => { for (const [p, v] of f) if (re.test(p) && typeof v !== "boolean" && v !== "" && v !== null && isFinite(Number(v))) return [Number(v), p]; return null; };
+const RE_ALT = /(^|[._])(alt|altitude|alt_baro|altbaro|alt_geom|baro_altitude|geo_altitude|altitude_ft|alt_ft|altitude_pes|altitudepes|altitude_m|alt_m|altitude_metros)([._]|$)/;
+const RE_GS = /(^|[._])(gs|groundspeed|ground_speed|spd|speed|speed_kt|gs_kt|velocidade|velocidade_kt|velocidade_kmh|speed_kmh|vel)([._]|$)/;
+const RE_GND = /(^|[._])(gnd|onground|on_ground|isonground|solo|no_solo|nosolo)([._]|$)/;
+const RE_FASE = /(^|[._])(fase|phase|flight_?phase|fase_voo)([._]|$)/;
+// lê altitude (pés), velocidade (nós), "no solo" e uma fase pronta, se o item tiver
+function lerVivo(f) {
+  let alt = null, gs = null, gnd = null, fs = null;
+  const a = numF(f, RE_ALT); if (a) alt = /_(m|metros)$/.test(a[1]) ? a[0] / 0.3048 : a[0];
+  const g = numF(f, RE_GS); if (g) gs = /kmh|km_h/.test(g[1]) ? g[0] / 1.852 : g[0];
+  for (const [p, v] of f) if (RE_GND.test(p)) { gnd = v === true || /^(true|1|gnd|sim|yes)$/i.test(String(v)); break; }
+  if (gnd === null) for (const [p, v] of f) if (RE_ALT.test(p) && /^gnd$/i.test(String(v))) { gnd = true; break; }
+  for (const [p, v] of f) if (RE_FASE.test(p) && typeof v === "string" && v) { fs = v; break; }
+  return alt === null && gs === null && gnd === null && !fs ? null : { alt, gs, gnd, fase: fs };
+}
+let VIVOS = {}, VIVO_LISTA = [];
+function listaDe(d) {
+  if (Array.isArray(d)) return d;
+  if (d && typeof d === "object") {
+    for (const k in d) { if (Array.isArray(d[k])) return d[k]; }
+    for (const k in d) { const r = d[k] && typeof d[k] === "object" ? listaDe(d[k]) : null; if (r && r.length) return r; }
+    const vals = Object.values(d);
+    if (vals.length && vals.every(v => v && typeof v === "object" && !Array.isArray(v))) return vals;
+  }
+  return [];
+}
+function mapaVivos(d) {
+  const m = {}; VIVO_LISTA = listaDe(d);
+  VIVO_LISTA.forEach(o => {
+    if (!o || typeof o !== "object") return;
+    const f = achata(o), L = lerVivo(f); if (!L) return;
+    f.filter(([p, v]) => typeof v === "string" && v && v.length <= 12 && /(^|[._])(callsign|call|voo|flight|ident|reg|registration|matricula|prefixo|tail|cs)([._]|$)/.test(p))
+      .forEach(([, id]) => chaves(id).forEach(k => { m[k] = L; }));
+  });
+  return m;
+}
+function liveDe(x) {
+  for (const id of [x.voo, x.reg]) for (const k of chaves(id)) if (VIVOS[k]) return VIVOS[k];
+  return x.live && !RE_FEITO.test(String(x.status || "")) ? x.live : null;
+}
+// em que ponto do pouso/decolagem a aeronave está (só quando há dados ao vivo)
+function fase(x, tipo) {
+  const L = liveDe(x); if (!L) return null;
+  if (L.fase) return { t: traduz(L.fase), ativo: true, hot: false };
+  const gnd = L.gnd === true || (L.gnd === null && L.alt !== null && L.alt <= 0), alt = L.alt, gs = L.gs;
+  if (tipo === "pou") {
+    if (!gnd) {
+      if (alt === null) return { t: "No ar", ativo: true };
+      return alt <= 150 ? { t: "Curta final", ativo: true, hot: true } : alt <= 3000 ? { t: "Na final", ativo: true } : alt <= 6000 ? { t: "Aproximando", ativo: true } : null;
+    }
+    if (gs === null) return { t: "Pousou", ativo: true };
+    return gs > 60 ? { t: "Tocando", ativo: true, hot: true } : gs > 25 ? { t: "Desacelerando", ativo: true } : gs > 3 ? { t: "Taxiando", ativo: true } : { t: "No solo", ativo: true };
+  }
+  if (gnd) {
+    if (gs === null || gs <= 3) return null;
+    return gs > 40 ? { t: "Corrida de decolagem", ativo: true, hot: true } : { t: "Taxiando", ativo: true };
+  }
+  return alt === null || alt <= 2500 ? { t: "Decolou", ativo: true, hot: true } : alt <= 10000 ? { t: "Em subida", ativo: true } : null;
+}
+const fmtN = n => Math.round(n).toLocaleString("pt-BR");
+// altitude e velocidade: um par em pés/nós, outro em metros/km/h; o CSS alterna os dois
+function vals(L) {
+  if (!L) return "";
+  const p1 = [], p2 = [];
+  if (L.alt !== null && L.gnd !== true) { p1.push(`<b>${fmtN(L.alt)}</b> ft`); p2.push(`<b>${fmtN(L.alt * 0.3048)}</b> m`); }
+  if (L.gs !== null) { p1.push(`<b>${fmtN(L.gs)}</b> kt`); p2.push(`<b>${fmtN(L.gs * 1.852)}</b> km/h`); }
+  return p1.length ? `<span class="vals"><span class="v v1">${p1.join(" · ")}</span><span class="v v2">${p2.join(" · ")}</span></span>` : "";
+}
+
 /* ====== TELA ====== */
 function linha(o, cls, rotulo) {
   const x = item(o, cls);
-  const rot = rotulo === "previsto" && x.rot ? x.rot : rotulo;
+  const fs = fase(x, cls), L = liveDe(x);
+  const rot = fs ? "agora" : rotulo === "previsto" && x.rot ? x.rot : rotulo;
   const titulo = [x.voo, x.cia].filter(Boolean).join(" · ") || x.reg || "Aeronave";
   const trecho = x.rota ? (x.rotaPre ? (cls === "pou" ? "de " : "para ") : "") + x.rota : null;
   const sub = [x.reg, x.aero].filter(Boolean).join(" · ");
@@ -413,12 +508,12 @@ function linha(o, cls, rotulo) {
     <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${esc(rot)}</small></div>
     ${logo(x.cod)}
     <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span>${trecho ? `<span class="rt">${esc(trecho)}</span>` : ""}</div>
-    <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${st ? `<br><em class="${atr}">${esc(st)}</em>` : ""}</div>
+    <div class="side">${fs ? `<em class="fase ${cls}${fs.hot ? " hot" : ""}">${esc(fs.t)}</em>${vals(L) || "<br>"}` : ""}${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${st ? `<br><em class="${atr}">${esc(st)}</em>` : ""}</div>
   </div>`;
 }
 function desenha(id, lista, cls, rotulo, ordem, vazio) {
   const el = $(id);
-  const arr = lista.map(o => ({ o, k: item(o, cls).ts }));
+  const arr = lista.map(o => { const x = item(o, cls), f = fase(x, cls); return { o, k: f && f.ativo ? 1e15 + x.ts : x.ts }; });
   if (arr.some(a => a.k)) arr.sort((a, b) => ordem === "desc" ? b.k - a.k : a.k - b.k);
   el.innerHTML = arr.length ? arr.slice(0, 4).map(a => linha(a.o, cls, rotulo)).join("") : `<div class="empty">${vazio}</div>`;
 }
@@ -451,17 +546,19 @@ function depura(h, p) {
   const sch = separa(p || h);
   box.textContent = "== ÚLTIMO VOO RECEBIDO EM /api/flights (vazio = ainda não apareceu nenhum) ==\n" + (ult ? JSON.stringify(ult, null, 1) : "nenhum até agora — deixe esta página aberta") +
     "\n\n== PRIMEIRO ITEM DE schedules (arrivals) ==\n" + JSON.stringify(sch.pou[0] || null, null, 1) +
-    "\n\n== PRIMEIRO ITEM DE schedules (departures) ==\n" + JSON.stringify(sch.dec[0] || null, null, 1);
+    "\n\n== PRIMEIRO ITEM DE schedules (departures) ==\n" + JSON.stringify(sch.dec[0] || null, null, 1) +
+    "\n\n== AO VIVO (CONFIG.aoVivo) ==\n" + (CONFIG.aoVivo ? JSON.stringify(VIVO_LISTA.slice(0, 2), null, 1) + "\nchaves lidas: " + Object.keys(VIVOS).join(", ") : "não configurado");
 }
 
 async function carregar() {
   const st = $("status");
   try {
     const [h, p] = await Promise.all([busca(CONFIG.historico), CONFIG.proximos === CONFIG.historico ? null : busca(CONFIG.proximos)]);
+    if (CONFIG.aoVivo) { try { VIVOS = mapaVivos(await busca(CONFIG.aoVivo)); } catch (e) { VIVOS = {}; console.warn("ao vivo:", e); } }
     depura(h, p);
     const hist = p ? separa(h) : { pou: [], dec: [] };
     const prox = separa(p || h);
-    const feito = tipo => o => RE_FEITO.test(String(item(o, tipo).status || ""));
+    const feito = tipo => o => { const x = item(o, tipo); return RE_FEITO.test(String(x.status || "")) || !!(fase(x, tipo) || {}).ativo; };
     // o que já pousou/decolou vai para "últimos"; o resto fica em "próximos"
     desenha("ultPou", [...hist.pou, ...prox.pou.filter(feito("pou"))], "pou", "pousou", "desc", "Nenhum pouso registrado ainda.");
     desenha("ultDec", [...hist.dec, ...prox.dec.filter(feito("dec"))], "dec", "decolou", "desc", "Nenhuma decolagem registrada ainda.");
@@ -479,6 +576,7 @@ async function carregar() {
 const relogio = () => { $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso }); };
 relogio(); setInterval(relogio, 1000);
 carregar(); setInterval(carregar, CONFIG.atualizarMs);
+setInterval(() => document.body.classList.toggle("km"), 3500); // alterna pés/nós e metros/km/h
 </script>
 <script>
 /* menu do celular */
