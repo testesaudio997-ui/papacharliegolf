@@ -41,6 +41,7 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .side{text-align:right;font-size:.8rem;color:var(--mut)}
 .side em{font-style:normal;display:inline-block;margin-top:3px;padding:2px 9px;border-radius:99px;background:#1a2540;color:var(--tx);font-weight:700}
 .side em.rw{background:var(--ac);color:#1a1200}
+.side em.atr{background:#4a1c1c;color:#ffb4b4}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--mut);text-align:center;font-size:.92rem}
 footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var(--mut);font-size:.85rem;text-align:center}
 </style>
@@ -89,14 +90,26 @@ const CONFIG = {
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const RE_POU = /pous|land|arriv|chega|\barr\b/i, RE_DEC = /decol|take|depart|parte|part|saida|saída|\bdep\b/i;
+const RE_FEITO = /departed|landed|arrived|took ?off|decolou|pousou|chegou/i;
 
-// pega o primeiro campo existente (ignora maiúsculas/acentos nos nomes)
-const norm = k => k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f_\-\s]/g, "");
+const norm = k => String(k).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f_\-\s]/g, "");
 function pick(o, nomes) {
   const m = {}; for (const k in o) m[norm(k)] = o[k];
   for (const n of nomes) { const v = m[norm(n)]; if (v !== undefined && v !== null && v !== "") return v; }
   return null;
 }
+// achata o objeto em [caminho, valor] (só valores simples, até 5 níveis)
+function achata(o, pre = "", d = 0, out = []) {
+  if (o === null || o === undefined || d > 5) return out;
+  if (typeof o !== "object") { out.push([pre.toLowerCase(), o]); return out; }
+  if (Array.isArray(o)) { o.slice(0, 5).forEach((v, i) => achata(v, pre + "." + i, d + 1, out)); return out; }
+  for (const k in o) achata(o[k], pre ? pre + "." + k : k, d + 1, out);
+  return out;
+}
+const ehTempo = v => (typeof v === "number" && v > 1e9 && v < 1e13) ||
+  (typeof v === "string" && (/^\d{9,13}$/.test(v) || /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v) || /^\d{1,2}:\d{2}(:\d{2})?$/.test(v)));
+const B = w => new RegExp("(^|[._])(" + w + ")([._]|$)");
+
 function hora(v) {
   if (v == null) return "";
   let d;
@@ -110,25 +123,71 @@ function ts(v) {
   if (typeof v === "number" || /^\d+(\.\d+)?$/.test(String(v))) { v = Number(v); return v < 1e12 ? v * 1000 : v; }
   const t = new Date(String(v).replace(" ", "T")).getTime(); return isNaN(t) ? 0 : t;
 }
-function item(o) {
-  const t = pick(o, ["horario", "hora", "datahora", "data_hora", "timestamp", "time", "created_at", "criado_em", "real", "actual", "estimado", "eta", "etd", "previsto", "scheduled"]);
+
+// escolhe o melhor horário do voo: real > estimado > programado, e do lado certo (chegada x saída)
+function achaHora(f, tipo) {
+  const lista = f.filter(([p, v]) => ehTempo(v) && !/updat|creat|criad|fetch|collect|(^|\.)at$/.test(p));
+  if (!lista.length) return { t: null, rot: "" };
+  const reChega = new RegExp(B("arriv\\w*|chega\\w*|pouso|landing|sta|eta").source), reSai = new RegExp(B("depart\\w*|saida|decol\\w*|takeoff|std|etd").source);
+  const mine = tipo === "pou" ? reChega : reSai, other = tipo === "pou" ? reSai : reChega;
+  const reReal = /real|actual|atual|efetiv/, reEst = /estimat|estimad|expect|previs|(^|[._])(eta|etd)([._]|$)/, reProg = /sched|program|(^|[._])(sta|std)([._]|$)/;
+  let best = null, bs = -1e9;
+  lista.forEach(([p, v], i) => {
+    let s = 0;
+    if (mine.test(p)) s += 10; if (other.test(p)) s -= 10;
+    if (reReal.test(p)) s += 6; else if (reEst.test(p)) s += 4; else if (reProg.test(p)) s += 2;
+    s -= i * 0.01;
+    if (s > bs) { bs = s; best = [p, v]; }
+  });
+  const p = best[0];
+  return { t: best[1], rot: reReal.test(p) ? "real" : reEst.test(p) ? "estimado" : reProg.test(p) ? "programado" : "" };
+}
+function item(o, tipo) {
+  const f = achata(o);
+  const get = (re, pref) => {
+    const c = f.filter(([p, v]) => re.test(p) && typeof v === "string" && v && v.length <= 40 && !ehTempo(v));
+    const pf = pref && c.find(([p]) => pref.test(p));
+    return (pf || c[0] || [])[1] || null;
+  };
+  const h = achaHora(f, tipo);
+  let st = pick(o, ["status", "situacao", "situação", "estado"]);
+  if (st && typeof st === "object") st = st.text || st.status || (st.generic && st.generic.status && st.generic.status.text) || null;
+  if (!st) st = get(/(^|\.)status(\.text)?$/);
+  const orig = get(/(^|\.)(origem|origin|orig|from|de)(\.|$)/, /(iata|code|icao|codigo)$/);
+  const dest = get(/(^|\.)(destino|destination|dest|to|para)(\.|$)/, /(iata|code|icao|codigo)$/);
   return {
-    t, ts: ts(t),
+    t: h.t, rot: h.rot, ts: ts(h.t),
     voo: pick(o, ["voo", "flight", "callsign", "numero_voo", "flightnumber", "ident"]),
     cia: pick(o, ["cia", "companhia", "airline", "operador", "operator"]),
     reg: pick(o, ["matricula", "registro", "registration", "prefixo", "reg", "tail"]),
-    aero: pick(o, ["aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type", "type_aircraft"]),
-    rota: pick(o, ["rota", "origem", "from", "origin", "destino", "to", "destination", "de", "para"]),
-    rwy: pick(o, ["cabeceira", "pista", "runway", "rwy"]),
-    status: pick(o, ["status", "situacao", "situação", "estado"])
+    aero: pick(o, ["aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type"]) || get(/aircraft|aeronave|modelo|equip/, /(code|model|type|text|name)$/),
+    rota: orig && dest ? orig + " → " + dest : (orig || dest),
+    rwy: pick(o, ["cabeceira", "pista", "runway", "rwy"]) || get(/cabeceira|pista|runway|rwy/),
+    status: typeof st === "string" ? st : null
   };
 }
-function acha(d, re) { // procura, num objeto, a primeira lista cuja chave bate com re
+
+// traduz o status que vem em inglês
+function traduz(s) {
+  s = String(s || "").trim(); if (!s) return "";
+  return s
+    .replace(/(\d+)\s*h\s*(\d+)\s*m(?:in)?\s*ago/i, "há $1h$2min")
+    .replace(/(\d+)\s*m(?:in)?\s*ago/i, "há $1 min")
+    .replace(/(\d+)\s*h\s*ago/i, "há $1 h")
+    .replace(/(\d+)\s*d\s*ago/i, "há $1 d")
+    .replace(/\bDeparted\b/i, "Decolou").replace(/\bLanded\b/i, "Pousou").replace(/\bArrived\b/i, "Chegou")
+    .replace(/\bDelayed\b/i, "Atrasado").replace(/\bScheduled\b/i, "Programado").replace(/\bEstimated\b/i, "Previsto")
+    .replace(/\bCancell?ed\b/i, "Cancelado").replace(/\bDiverted\b/i, "Desviado").replace(/\bOn time\b/i, "No horário")
+    .replace(/\bEn route\b/i, "Em rota").replace(/\bAirborne\b/i, "No ar").replace(/\bBoarding\b/i, "Embarque")
+    .replace(/\bTaxiing\b/i, "Taxiando").replace(/\bEarly\b/i, "Adiantado").replace(/\bUnknown\b/i, "Indefinido");
+}
+
+function acha(d, re) {
   if (!d || typeof d !== "object") return [];
   for (const k in d) if (re.test(k) && Array.isArray(d[k])) return d[k];
   return [];
 }
-function separa(d) { // devolve { pou: [], dec: [] } a partir de array misto ou de objeto com listas
+function separa(d) {
   if (Array.isArray(d)) {
     const r = { pou: [], dec: [] };
     d.forEach(o => { const tp = String(pick(o, ["tipo", "type", "movimento", "evento", "event", "operacao", "operação", "kind"]) || ""); (RE_DEC.test(tp) && !RE_POU.test(tp) ? r.dec : r.pou).push(o); });
@@ -141,18 +200,22 @@ function separa(d) { // devolve { pou: [], dec: [] } a partir de array misto ou 
 
 /* ====== TELA ====== */
 function linha(o, cls, rotulo) {
-  const x = item(o);
+  const x = item(o, cls);
+  const rot = rotulo === "previsto" && x.rot ? x.rot : rotulo;
   const titulo = [x.voo, x.cia].filter(Boolean).join(" · ") || x.reg || "Aeronave";
   const sub = [x.reg && x.voo ? x.reg : null, x.aero, x.rota].filter(Boolean).join(" · ");
+  const st = traduz(x.status);
+  const atr = /atrasad|cancel|desvi/i.test(st) ? " atr" : "";
   return `<div class="row ${cls}">
-    <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${rotulo}</small></div>
+    <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${esc(rot)}</small></div>
     <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span></div>
-    <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${x.status ? `<br><em>${esc(x.status)}</em>` : ""}</div>
+    <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${st ? `<br><em class="${atr}">${esc(st)}</em>` : ""}</div>
   </div>`;
 }
 function desenha(id, lista, cls, rotulo, ordem, vazio) {
   const el = $(id);
-  const arr = lista.map(o => ({ o, k: item(o).ts })).sort((a, b) => ordem === "desc" ? b.k - a.k : a.k - b.k);
+  const arr = lista.map(o => ({ o, k: item(o, cls).ts }));
+  if (arr.some(a => a.k)) arr.sort((a, b) => ordem === "desc" ? b.k - a.k : a.k - b.k);
   el.innerHTML = arr.length ? arr.slice(0, 8).map(a => linha(a.o, cls, rotulo)).join("") : `<div class="empty">${vazio}</div>`;
 }
 async function busca(url) {
@@ -168,16 +231,14 @@ async function carregar() {
   const st = $("status");
   try {
     const [h, p] = await Promise.all([busca(CONFIG.historico), CONFIG.proximos === CONFIG.historico ? null : busca(CONFIG.proximos)]);
-    const hist = separa(h), prox = separa(p || h);
-    const agora = Date.now();
-    // se histórico e próximos vierem no mesmo endpoint, separa pelo horário
-    const mesmo = !p;
-    const passado = l => mesmo ? l.filter(o => { const k = item(o).ts; return !k || k <= agora; }) : l;
-    const futuro = l => mesmo ? l.filter(o => item(o).ts > agora) : l;
-    desenha("ultPou", passado(hist.pou), "pou", "pousou", "desc", "Nenhum pouso registrado ainda.");
-    desenha("ultDec", passado(hist.dec), "dec", "decolou", "desc", "Nenhuma decolagem registrada ainda.");
-    desenha("proxPou", futuro(prox.pou), "pou", "previsto", "asc", "Sem pousos previstos no momento.");
-    desenha("proxDec", futuro(prox.dec), "dec", "previsto", "asc", "Sem decolagens previstas no momento.");
+    const hist = p ? separa(h) : { pou: [], dec: [] };
+    const prox = separa(p || h);
+    const feito = tipo => o => RE_FEITO.test(String(item(o, tipo).status || ""));
+    // o que já pousou/decolou vai para "últimos"; o resto fica em "próximos"
+    desenha("ultPou", [...hist.pou, ...prox.pou.filter(feito("pou"))], "pou", "pousou", "desc", "Nenhum pouso registrado ainda.");
+    desenha("ultDec", [...hist.dec, ...prox.dec.filter(feito("dec"))], "dec", "decolou", "desc", "Nenhuma decolagem registrada ainda.");
+    desenha("proxPou", prox.pou.filter(o => !feito("pou")(o)), "pou", "previsto", "asc", "Sem pousos previstos no momento.");
+    desenha("proxDec", prox.dec.filter(o => !feito("dec")(o)), "dec", "previsto", "asc", "Sem decolagens previstas no momento.");
     st.className = "ok";
     st.lastElementChild.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso });
   } catch (e) {
@@ -187,8 +248,8 @@ async function carregar() {
     ["ultPou", "ultDec", "proxPou", "proxDec"].forEach(i => { if (!$(i).innerHTML) $(i).innerHTML = '<div class="empty">Não foi possível carregar os dados agora.</div>'; });
   }
 }
-const relogio=()=>{$("clock").textContent=new Date().toLocaleTimeString("pt-BR",{timeZone:CONFIG.fuso});};
-relogio(); setInterval(relogio,1000);
+const relogio = () => { $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso }); };
+relogio(); setInterval(relogio, 1000);
 carregar(); setInterval(carregar, CONFIG.atualizarMs);
 </script>
 </body>
