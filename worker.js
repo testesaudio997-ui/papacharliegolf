@@ -254,8 +254,13 @@ const PAINEL_PADRAO = "http://45.70.219.12:3010";
 async function painel(env, caminho, search) {
   const base = (env.PAINEL_URL || PAINEL_PADRAO).replace(/\/$/, "");
   try {
-    const r = await ft(`${base}/${caminho}${search}`, { headers: { Accept: "application/json" } }, 8000);
-    if (!r.ok) throw new Error("painel " + r.status);
+    const r = await ft(`${base}/${caminho}${search}`, {
+      headers: { "Accept": "application/json, */*", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36", "Referer": base + "/", "Origin": base }
+    }, 8000);
+    if (!r.ok) {
+      const t = (await r.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+      throw new Error("painel " + r.status + (t ? " · " + t : ""));
+    }
     return new Response(await r.text(), {
       status: 200,
       headers: { "Content-Type": r.headers.get("content-type") || "application/json", "Cache-Control": "public, max-age=15" }
