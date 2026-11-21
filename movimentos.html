@@ -66,12 +66,31 @@ header.open .menu-btn i::after{transform:translateY(-6px) rotate(-45deg)}
   header nav a:last-child{border-bottom:0}
 }
 @media(max-width:400px){.logo{gap:8px}.logo img{width:36px;height:36px}.logo span{font-size:.7rem}header .hora{font-size:.72rem}.menu-btn{margin-left:8px;width:38px;height:38px}}
+
+
+/* ====== CARROSSEL: ACERVO DE AERONAVES (roda sozinho) ====== */
+.acervo{padding-bottom:10px}
+.acervo-sub{color:var(--mut);margin:-4px 0 16px;font-size:.92rem}
+.car{overflow:hidden;border-radius:12px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.car-track{display:flex;gap:16px;width:max-content;animation:carMove var(--dur,80s) linear infinite;will-change:transform}
+.car:hover .car-track{animation-play-state:paused}
+@keyframes carMove{to{transform:translateX(calc(-50% - 8px))}}
+.slide-av{position:relative;flex:0 0 clamp(260px,28vw,340px);aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0b1328;border:1px solid var(--line);cursor:zoom-in}
+.slide-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.slide-av:hover img{transform:scale(1.08)}
+.slide-av figcaption{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 12px;display:grid;gap:2px;background:linear-gradient(0deg,rgba(5,9,20,.92) 0%,rgba(5,9,20,.6) 55%,transparent 100%);transition:opacity .35s ease,transform .35s ease}
+.slide-av:hover figcaption{opacity:0;transform:translateY(12px)}
+.av-cia{color:var(--ac);font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.slide-av figcaption b{font-size:.98rem;line-height:1.2}
+.av-reg{font-weight:800;letter-spacing:.04em;font-size:1rem}
+.slide-av small{color:var(--mut);font-size:.68rem;margin-top:2px}
+@media(prefers-reduced-motion:reduce){.car{overflow-x:auto;-webkit-mask-image:none;mask-image:none}.car-track{animation:none}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
   <a href="/" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
-  <nav id="menu"><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
+  <nav id="menu"><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
 </div></header>
 
 <main class="wrap">
@@ -90,6 +109,94 @@ header.open .menu-btn i::after{transform:translateY(-6px) rotate(-45deg)}
     <div class="cols">
       <div><h2 class="pou">Próximos pousos</h2><div class="list" id="proxPou"></div></div>
       <div><h2 class="dec">Próximas decolagens</h2><div class="list" id="proxDec"></div></div>
+    </div>
+  </section>
+  <section class="acervo">
+    <h2>Acervo de aeronaves do Recife</h2>
+    <p class="acervo-sub">Aeronaves que já passaram pelo Aeroporto Internacional do Recife (SBRF).</p>
+    <div class="car" id="car" aria-label="Acervo de aeronaves">
+      <div class="car-track" id="carTrack">
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/ATR%20ATR-42-320%2C%20Total%20Linhas%20Aereas%20AN0192252.jpg?width=1000" alt="Total Linhas Aéreas ATR 42-320 PT-TTL">
+        <figcaption><span class="av-cia">Total Linhas Aéreas</span><b>ATR 42-320</b><span class="av-reg">PT-TTL</span><small>Foto: JetPix · 14/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/ATR%20ATR-42-320%2C%20Unex%20AN0192253.jpg?width=1000" alt="Unex ATR 42-320 PT-MFF">
+        <figcaption><span class="av-cia">Unex</span><b>ATR 42-320</b><span class="av-reg">PT-MFF</span><small>Foto: JetPix · 15/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Embraer%20EMB-120RT%20Brasilia%2C%20Nordeste%20Linhas%20Aereas%20AN0205129.jpg?width=1000" alt="Nordeste Linhas Aéreas Embraer EMB-120RT Brasília PT-OQJ">
+        <figcaption><span class="av-cia">Nordeste Linhas Aéreas</span><b>Embraer EMB-120RT Brasília</b><span class="av-reg">PT-OQJ</span><small>Foto: JetPix · 15/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Fokker%20100%20%28F-28-0100%29%2C%20TAM%20AN0287917.jpg?width=1000" alt="TAM Fokker 100 PT-MRJ">
+        <figcaption><span class="av-cia">TAM</span><b>Fokker 100</b><span class="av-reg">PT-MRJ</span><small>Foto: JetPix · 16/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Boeing%20737-341%2C%20Varig%20AN0288316.jpg?width=1000" alt="VARIG Boeing 737-341 PP-VOF">
+        <figcaption><span class="av-cia">VARIG</span><b>Boeing 737-341</b><span class="av-reg">PP-VOF</span><small>Foto: JetPix · 15/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Boeing%20737-341%2C%20Varig%20AN0287918.jpg?width=1000" alt="VARIG Boeing 737-341 PP-VOS">
+        <figcaption><span class="av-cia">VARIG</span><b>Boeing 737-341</b><span class="av-reg">PP-VOS</span><small>Foto: JetPix · 16/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Boeing%20727-41%28F%29%2C%20Varig%20Carga%20AN0192249.jpg?width=1000" alt="VARIG Carga Boeing 727-41(F) PP-VLD">
+        <figcaption><span class="av-cia">VARIG Carga</span><b>Boeing 727-41(F)</b><span class="av-reg">PP-VLD</span><small>Foto: JetPix · 15/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/VASP%20MD-11%20PP-SOW%20REC%201998-2-15.png?width=1000" alt="VASP McDonnell Douglas MD-11 PP-SOW">
+        <figcaption><span class="av-cia">VASP</span><b>McDonnell Douglas MD-11</b><span class="av-reg">PP-SOW</span><small>Foto: Torsten Maiwald · 15/02/1998 · GFDL 1.2</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/UR-CKL%20Cavok%20Airlines%20Antonov%20An-12BK%20%2822937035540%29.jpg?width=1000" alt="Cavok Airlines Antonov An-12BK UR-CKL">
+        <figcaption><span class="av-cia">Cavok Airlines</span><b>Antonov An-12BK</b><span class="av-reg">UR-CKL</span><small>Foto: Diegonvs · 23/11/2015 · CC BY 2.0</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/LX-OCV%20Cargolux%20Airlines%20International%20Boeing%20747-400F%20-%20cn%2029731%20ln%201222%20%2817877560220%29.jpg?width=1000" alt="Cargolux Boeing 747-400F LX-OCV">
+        <figcaption><span class="av-cia">Cargolux</span><b>Boeing 747-400F</b><span class="av-reg">LX-OCV</span><small>Foto: Diegonvs · 24/05/2015 · CC BY 2.0</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/N189AN%20American%20Airlines%20Boeing%20757-223%28WL%29%20-%20cn%2032383%20970%20%2824271269232%29.jpg?width=1000" alt="American Airlines Boeing 757-223(WL) N189AN">
+        <figcaption><span class="av-cia">American Airlines</span><b>Boeing 757-223(WL)</b><span class="av-reg">N189AN</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/N342AN%20American%20Airlines%20Boeing%20767-323%28ER%29%28WL%29%20-%20cn%2033081%20896%20%2822604523184%29.jpg?width=1000" alt="American Airlines Boeing 767-323(ER)(WL) N342AN">
+        <figcaption><span class="av-cia">American Airlines</span><b>Boeing 767-323(ER)(WL)</b><span class="av-reg">N342AN</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-ABD%20TAM%20Cargo%20Boeing%20767-300F%20-%20cn%2034245%20934%20%2821962629961%29.jpg?width=1000" alt="TAM Cargo Boeing 767-300F PR-ABD">
+        <figcaption><span class="av-cia">TAM Cargo</span><b>Boeing 767-300F</b><span class="av-reg">PR-ABD</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-AIV%20AZUL%20Linhas%20A%C3%A9reas%20Brasileiras%20Airbus%20A330-243%20-%20cn%20532%20%2823752623773%29.jpg?width=1000" alt="Azul Airbus A330-243 PR-AIV">
+        <figcaption><span class="av-cia">Azul</span><b>Airbus A330-243</b><span class="av-reg">PR-AIV</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-AKC%20AZUL%20Linhas%20A%C3%A9reas%20Brasileiras%20ATR%2072-600%20%2872-212A%29%20-%20cn%201270%20%2824353215596%29.jpg?width=1000" alt="Azul ATR 72-600 PR-AKC">
+        <figcaption><span class="av-cia">Azul</span><b>ATR 72-600</b><span class="av-reg">PR-AKC</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-AVP%20Avianca%20Brasil%20Airbus%20A320-200%20-%20cn%204891%20%2822349991106%29.jpg?width=1000" alt="Avianca Brasil Airbus A320-200 PR-AVP">
+        <figcaption><span class="av-cia">Avianca Brasil</span><b>Airbus A320-200</b><span class="av-reg">PR-AVP</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-ONP%20Avianca%20Brasil%20Airbus%20A318-100%20-%20cn%203606r%20%2817287026728%29.jpg?width=1000" alt="Avianca Brasil Airbus A318-100 PR-ONP">
+        <figcaption><span class="av-cia">Avianca Brasil</span><b>Airbus A318-100</b><span class="av-reg">PR-ONP</span><small>Foto: Diegonvs · 09/05/2015 · CC BY 2.0</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-GED%20GOL%20Transportes%20A%C3%A9reos%20Boeing%20737-7EH%28WL%29%20-%20cn%2037609%203799%20%2823206692636%29.jpg?width=1000" alt="GOL Boeing 737-7EH(WL) PR-GED">
+        <figcaption><span class="av-cia">GOL</span><b>Boeing 737-7EH(WL)</b><span class="av-reg">PR-GED</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PR-MBO%20TAM%20Linhas%20A%C3%A9reas%20Airbus%20A320-200%20-%20cn%203156%20%2819211541545%29.jpg?width=1000" alt="TAM Airbus A320-200 PR-MBO">
+        <figcaption><span class="av-cia">TAM</span><b>Airbus A320-200</b><span class="av-reg">PR-MBO</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      <figure class="slide-av">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/PT-MXD%20TAM%20Linhas%20A%C3%A9reas%20Airbus%20A321-200%20-%20cn%203761%20%2821764748620%29.jpg?width=1000" alt="TAM Airbus A321-200 PT-MXD">
+        <figcaption><span class="av-cia">TAM</span><b>Airbus A321-200</b><span class="av-reg">PT-MXD</span><small>Foto: Wikimedia Commons</small></figcaption>
+      </figure>
+      </div>
     </div>
   </section>
 </main>
@@ -362,6 +469,20 @@ carregar(); setInterval(carregar, CONFIG.atualizarMs);
   document.addEventListener("click",e=>{ if(!h.contains(e.target)) set(false); });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") set(false); });
   matchMedia("(min-width:721px)").addEventListener("change",e=>{ if(e.matches) set(false); });
+})();
+</script>
+<script>
+/* carrossel do acervo: roda sozinho em loop; passar o mouse pausa, mostra só a foto e dá zoom */
+(function(){
+  const t=document.getElementById("carTrack"); if(!t) return;
+  const orig=[...t.children];
+  orig.forEach(f=>{const c=f.cloneNode(true); c.setAttribute("aria-hidden","true"); t.appendChild(c);});
+  const ajusta=()=>{ t.style.setProperty("--dur", Math.max(20, t.children.length/2*4)+"s"); };
+  t.querySelectorAll("img").forEach(i=>i.addEventListener("error",()=>{
+    t.querySelectorAll("img").forEach(o=>{ if(o.getAttribute("src")===i.getAttribute("src")){ const f=o.closest(".slide-av"); if(f) f.remove(); } });
+    ajusta();
+  }));
+  ajusta();
 })();
 </script>
 </body>
