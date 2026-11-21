@@ -86,12 +86,32 @@ header.open .menu-btn i::after{transform:translateY(-6px) rotate(-45deg)}
 .av-reg{font-weight:800;letter-spacing:.04em;font-size:1rem}
 .slide-av small{color:var(--mut);font-size:.68rem;margin-top:2px}
 @media(prefers-reduced-motion:reduce){.car{overflow-x:auto;-webkit-mask-image:none;mask-image:none}.car-track{animation:none}}
+
+/* ====== MENU RADAR PCG (submenu) ====== */
+header nav .dd{position:relative;margin-left:20px;display:inline-flex;align-items:center}
+header nav .dd-btn{background:none;border:0;padding:0;margin:0;color:var(--mut);font:inherit;font-size:.92rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+header nav .dd-btn::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+header nav .dd:hover .dd-btn,header nav .dd.open .dd-btn,header nav .dd.on .dd-btn,header nav .dd-btn:focus-visible{color:var(--ac)}
+header nav .dd-menu{position:absolute;top:calc(100% + 16px);left:-14px;min-width:290px;display:none;background:rgba(7,13,26,.98);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 30px rgba(0,0,0,.45);overflow:hidden;z-index:20}
+header nav .dd-menu::before{content:"";position:absolute;left:0;right:0;top:-16px;height:16px}
+header nav .dd:hover .dd-menu,header nav .dd.open .dd-menu{display:block}
+header nav .dd-menu a{margin:0;padding:13px 16px;display:flex;border-bottom:1px solid var(--line);white-space:nowrap;font-size:.9rem}
+header nav .dd-menu a:last-child{border-bottom:0}
+@media(max-width:720px){
+  header nav .dd{display:block;margin:0}
+  header nav .dd-btn{width:100%;justify-content:space-between;padding:15px 4px;border-bottom:1px solid var(--line);font-size:1rem}
+  header nav .dd-menu{position:static;min-width:0;border:0;border-radius:0;box-shadow:none;background:transparent;padding:0 0 0 14px}
+  header nav .dd-menu::before{display:none}
+  header nav .dd:hover .dd-menu{display:none}
+  header nav .dd.open .dd-menu{display:block}
+  header nav .dd.open .dd-btn::after{transform:rotate(225deg)}
+}
 </style>
 </head>
 <body>
 <header><div class="wrap">
   <a href="/" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
-  <nav id="menu"><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
+  <nav id="menu"><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><div class="dd"><button type="button" class="dd-btn" aria-expanded="false" aria-haspopup="true">Radar PCG</button><div class="dd-menu"><a href="/avioes">Aviões e arte por Bruno Rhavani</a><a href="/curiosidades">Curiosidades</a></div></div><a href="/sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
 </div></header>
 
 <main class="wrap">
@@ -484,6 +504,17 @@ carregar(); setInterval(carregar, CONFIG.atualizarMs);
     ajusta();
   }));
   ajusta();
+})();
+</script>
+<script>
+/* submenu Radar PCG */
+(function(){
+  document.querySelectorAll("nav .dd").forEach(d=>{
+    const b=d.querySelector(".dd-btn");
+    b.addEventListener("click",e=>{e.stopPropagation(); const o=!d.classList.contains("open"); d.classList.toggle("open",o); b.setAttribute("aria-expanded",o);});
+    document.addEventListener("click",e=>{ if(!d.contains(e.target)){ d.classList.remove("open"); b.setAttribute("aria-expanded","false"); } });
+    document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ d.classList.remove("open"); b.setAttribute("aria-expanded","false"); } });
+  });
 })();
 </script>
 </body>
