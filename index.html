@@ -262,7 +262,7 @@ main,footer{position:relative;z-index:1}
 
 <header><div class="wrap">
   <a href="#topo" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
-  <nav id="menu"><a href="#aovivo" class="nav-live" id="navLive"><i></i>Direto pra pista ao vivo!</a><a href="#aovivo" id="navOff">Direto pra pista ao vivo!</a><a href="#videos">Vídeos</a><a href="/movimentos">Movimentos</a><a href="#sobre">Sobre</a><a href="#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
+  <nav id="menu"><a href="#aovivo" class="nav-live" id="navLive"><i></i>Direto pra pista ao vivo!</a><a href="#aovivo" id="navOff">Direto pra pista ao vivo!</a><a href="#videos">Vídeos</a><a href="/movimentos">Movimentos</a><a href="/sobre">Sobre</a><a href="#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
 </div></header>
 
 <main id="topo">
@@ -313,18 +313,6 @@ main,footer{position:relative;z-index:1}
   </div>
 </div></section>
 
-<section id="sobre"><div class="wrap about">
-  <div>
-    <h2>Sobre o canal</h2>
-    <p>O Papa Charlie Golf TV transmite ao vivo o movimento de aeronaves no Aeroporto do Recife, com acompanhamento de voos, comunicação, clima e curiosidades da aviação.</p>
-    <p>Entre no chat da live, mande sua foto ou vídeo e participe da comunidade de apaixonados por aviação.</p>
-  </div>
-  <div>
-    <h2>Redes sociais</h2>
-    <div class="social" id="social"></div>
-  </div>
-</div></section>
-
 <section id="parceiros"><div class="wrap">
   <h2>Marcas que decolam junto com o Papa Charlie Golf</h2>
   <div class="parc-grid">
@@ -368,8 +356,7 @@ const ICONS = {
   "YouTube": `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="5" width="22" height="14" rx="4" fill="#ff0000"/><path d="M10 9l5 3-5 3z" fill="#fff"/></svg>`,
   "Instagram": `<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".35" stop-color="#fa7e1e"/><stop offset=".65" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#igg)"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="#fff"/></svg>`
 };
-$("social").innerHTML = CONFIG.social.filter(s=>s.url && s.url!=="#")
-  .map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${ICONS[s.nome]||""}${s.nome}</a>`).join("");
+/* as redes sociais agora ficam na página /sobre */
 
 
 /* ====== APRESENTAÇÃO DO AEROPORTO (edite os dados aqui) ====== */
