@@ -14,8 +14,11 @@ a{color:inherit;text-decoration:none}
 .wrap{max-width:1100px;margin:auto;padding:0 20px}
 header{position:sticky;top:0;z-index:10;background:rgba(7,13,26,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
-.logo{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}.logo img{border-radius:50%;box-shadow:0 0 0 2px rgba(232,238,252,.35)}.logo b{color:var(--ac)}
-nav a{margin-left:20px;color:var(--mut);font-size:.92rem}nav a:hover,nav a.on{color:var(--ac)}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}.logo img{border-radius:50%;box-shadow:0 0 0 2px rgba(232,238,252,.35)}.logo span{white-space:nowrap;color:var(--tx)}
+nav{margin-left:auto;display:flex;align-items:center}nav a{margin-left:20px;color:var(--mut);font-size:.92rem;display:inline-flex;align-items:center;line-height:1}nav a:hover,nav a.on{color:var(--ac)}
+.hora{margin-left:22px;font-size:.9rem;color:var(--mut);white-space:nowrap}#clock{font-variant-numeric:tabular-nums;color:var(--tx);font-weight:700}
+@media(max-width:720px){nav{display:none}.hora{margin-left:auto}}
+@media(max-width:520px){.logo span{font-size:.8rem}}
 .hero{padding:40px 0 10px;text-align:center}
 .hero h1{font-size:clamp(1.7rem,4.5vw,2.8rem);line-height:1.1}.hero h1 span{color:var(--ac)}
 .hero p{color:var(--mut);margin-top:10px}
@@ -31,8 +34,8 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .list{display:grid;gap:10px}
 .row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:12px;padding:12px 16px}
 .row.pou{border-left-color:var(--grn)}.row.dec{border-left-color:var(--blu)}
-.hora{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:62px}
-.hora small{display:block;font-size:.68rem;font-weight:600;color:var(--mut)}
+.hr{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:62px}
+.hr small{display:block;font-size:.68rem;font-weight:600;color:var(--mut)}
 .main b{display:block;font-size:1rem;line-height:1.25}
 .main span{color:var(--mut);font-size:.84rem}
 .side{text-align:right;font-size:.8rem;color:var(--mut)}
@@ -44,8 +47,8 @@ footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var
 </head>
 <body>
 <header><div class="wrap">
-  <a class="logo" href="/"><img src="logo.png" width="34" height="34" alt=""><span>PAPA CHARLIE <b>GOLF</b> TV</span></a>
-  <nav><a href="/">Início</a><a class="on" href="movimentos.html">Movimentos</a></nav>
+  <a href="/" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
+  <nav><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/voos.html">Chegadas e saídas</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
 </div></header>
 
 <main class="wrap">
@@ -142,7 +145,7 @@ function linha(o, cls, rotulo) {
   const titulo = [x.voo, x.cia].filter(Boolean).join(" · ") || x.reg || "Aeronave";
   const sub = [x.reg && x.voo ? x.reg : null, x.aero, x.rota].filter(Boolean).join(" · ");
   return `<div class="row ${cls}">
-    <div class="hora">${esc(hora(x.t)) || "--:--"}<small>${rotulo}</small></div>
+    <div class="hr">${esc(hora(x.t)) || "--:--"}<small>${rotulo}</small></div>
     <div class="main"><b>${esc(titulo)}</b><span>${esc(sub)}</span></div>
     <div class="side">${x.rwy ? `<em class="rw">Cab. ${esc(x.rwy)}</em>` : ""}${x.status ? `<br><em>${esc(x.status)}</em>` : ""}</div>
   </div>`;
@@ -176,11 +179,13 @@ async function carregar() {
     st.lastElementChild.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso });
   } catch (e) {
     st.className = "err";
-    st.lastElementChild.textContent = "Painel indisponível no momento";
+    st.lastElementChild.textContent = "Painel indisponível: " + (e.message || e);
     console.error(e);
     ["ultPou", "ultDec", "proxPou", "proxDec"].forEach(i => { if (!$(i).innerHTML) $(i).innerHTML = '<div class="empty">Não foi possível carregar os dados agora.</div>'; });
   }
 }
+const relogio=()=>{$("clock").textContent=new Date().toLocaleTimeString("pt-BR",{timeZone:CONFIG.fuso});};
+relogio(); setInterval(relogio,1000);
 carregar(); setInterval(carregar, CONFIG.atualizarMs);
 </script>
 </body>
