@@ -380,7 +380,7 @@ loadLives(); setInterval(loadLives,60000);
   // Resto da página: cada bloco aparece quando chega na tela
   document.querySelectorAll("section h2").forEach(h=>{ if(!h.closest(".about")) h.classList.add("rv"); });
   tag(".grid, .live-grid, .info, .stats-grid, .parc-grid, .social","rv-group");
-  tag(".more"); tag(".about > div"); tag(".support"); tag("footer .wrap");
+  tag(".more"); tag(".about > div"); tag(".support");
 
   const alvos=document.querySelectorAll(".rv, .rv-group");
   if(!("IntersectionObserver" in window)){ alvos.forEach(e=>e.classList.add("in","done")); return; }
@@ -388,14 +388,15 @@ loadLives(); setInterval(loadLives,60000);
   const io=new IntersectionObserver((lista)=>{
     lista.forEach(x=>{
       const el=x.target;
+      const alt=x.rootBounds?x.rootBounds.height:innerHeight;
       if(x.intersectionRatio>=.12){            // entrou na tela: aparece
         if(el.classList.contains("in")) return;
         el.classList.add("in");
         timers.set(el,setTimeout(()=>el.classList.add("done"),1800));
-      }else{                                    // saiu da tela: some (volta a aparecer ao rolar de novo)
+      }else if(x.boundingClientRect.top>alt*.5){ // saiu pela parte de baixo (ao subir): some
         clearTimeout(timers.get(el));
         el.classList.remove("in","done");
-      }
+      }                                         // saindo pelo topo: continua visível (evita piscar na borda)
     });
   },{threshold:[0,.12],rootMargin:"0px 0px -6% 0px"});
   alvos.forEach(e=>io.observe(e));
