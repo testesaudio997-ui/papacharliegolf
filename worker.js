@@ -250,7 +250,8 @@ async function stats(env) {
 /* ================= PAINEL (overlay) ================= */
 // Repassa GET /api/painel/<caminho> para o painel do overlay (evita o bloqueio http x https e o CORS no navegador).
 // Para trocar o endereço sem mexer no código: variável PAINEL_URL (Settings > Variables).
-const PAINEL_PADRAO = "http://45.70.219.12:3010";
+// Não pode ser o IP puro (o Cloudflare bloqueia com erro 1003): usa o nome criado no DNS (registro A "painel", DNS only).
+const PAINEL_PADRAO = "http://painel.papacharliegolf.com.br:3010";
 async function painel(env, caminho, search) {
   const base = (env.PAINEL_URL || PAINEL_PADRAO).replace(/\/$/, "");
   try {
