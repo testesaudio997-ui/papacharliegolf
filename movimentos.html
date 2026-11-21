@@ -135,7 +135,7 @@ function ts(v) {
 
 // escolhe o melhor horário do voo: real > estimado > programado, e do lado certo (chegada x saída)
 function achaHora(f, tipo) {
-  const lista = f.filter(([p, v]) => ehTempo(v) && !/updat|creat|criad|fetch|collect|(^|\.)at$/.test(p));
+  const lista = f.filter(([p, v]) => ehTempo(v) && !/updat|fetch|collect|refresh|atualiz/.test(p));
   if (!lista.length) return { t: null, rot: "" };
   const reChega = new RegExp(B("arriv\\w*|chega\\w*|pouso|landing|sta|eta").source), reSai = new RegExp(B("depart\\w*|saida|decol\\w*|takeoff|std|etd").source);
   const mine = tipo === "pou" ? reChega : reSai, other = tipo === "pou" ? reSai : reChega;
@@ -145,13 +145,14 @@ function achaHora(f, tipo) {
     let s = 0;
     if (mine.test(p)) s += 10; if (other.test(p)) s -= 10;
     if (reReal.test(p)) s += 6; else if (reEst.test(p)) s += 4; else if (reProg.test(p)) s += 2;
+    if (/creat|criad|(^|[._])(at|ts|time|when|hora|horario|data|date)([._]|$)/.test(p)) s += 1;
     s -= i * 0.01;
     if (s > bs) { bs = s; best = [p, v]; }
   });
   const p = best[0];
   return { t: best[1], rot: reReal.test(p) ? "real" : reEst.test(p) ? "estimado" : reProg.test(p) ? "programado" : "" };
 }
-const CIAS = { AD: "Azul", LA: "LATAM", JJ: "LATAM", G3: "GOL", TP: "TAP", "2Z": "Voepass", CM: "Copa", AR: "Aerolíneas Argentinas", UX: "Air Europa", IB: "Iberia", AF: "Air France", KL: "KLM", DL: "Delta", AA: "American", UA: "United", TK: "Turkish", ET: "Ethiopian", QR: "Qatar", EK: "Emirates", AV: "Avianca", H2: "Sky", ZP: "Paranair" };
+const CIAS = { AD: "Azul", LA: "LATAM", JJ: "LATAM", TAM: "LATAM", LAN: "LATAM", LP: "LATAM", XL: "LATAM", G3: "GOL", TP: "TAP", "2Z": "Voepass", CM: "Copa", AR: "Aerolíneas Argentinas", UX: "Air Europa", IB: "Iberia", AF: "Air France", KL: "KLM", DL: "Delta", AA: "American", UA: "United", TK: "Turkish", ET: "Ethiopian", QR: "Qatar", EK: "Emirates", AV: "Avianca", H2: "Sky", ZP: "Paranair" };
 const AERO = { A20N: "Airbus A320neo", A320: "Airbus A320", A21N: "Airbus A321neo", A321: "Airbus A321", A319: "Airbus A319", A332: "Airbus A330-200", A333: "Airbus A330-300", A339: "Airbus A330-900", A359: "Airbus A350-900", A35K: "Airbus A350-1000", B38M: "Boeing 737 MAX 8", B39M: "Boeing 737 MAX 9", B738: "Boeing 737-800", B737: "Boeing 737-700", B739: "Boeing 737-900", B744: "Boeing 747-400", B748: "Boeing 747-8", B772: "Boeing 777-200", B77W: "Boeing 777-300ER", B788: "Boeing 787-8", B789: "Boeing 787-9", E195: "Embraer E195", E295: "Embraer E195-E2", E190: "Embraer E190", E290: "Embraer E190-E2", E170: "Embraer E170", AT72: "ATR 72", AT76: "ATR 72-600", C208: "Cessna Caravan", B763: "Boeing 767-300", B762: "Boeing 767-200", MD11: "McDonnell Douglas MD-11" };
 const nomeCia = c => (c ? CIAS[String(c).toUpperCase()] || c : c);
 const nomeAero = c => (c ? AERO[String(c).toUpperCase()] || c : c);
@@ -181,6 +182,10 @@ function item(o, tipo) {
   const city = pick(o, ["city", "cidade"]);
   const orig = get(/(^|\.)(origem|origin|orig|from|de)(\.|$)/, /(iata|code|icao|codigo)$/);
   const dest = get(/(^|\.)(destino|destination|dest|to|para)(\.|$)/, /(iata|code|icao|codigo)$/);
+  const isREC = v => /^(REC|SBRF)\b/i.test(String(v || "").trim());
+  const rotaTxt = city ? { t: cidade(city), pre: true }
+    : orig && dest ? (isREC(orig) ? { t: dest, pre: true } : isREC(dest) ? { t: orig, pre: true } : { t: orig + " → " + dest, pre: false })
+    : { t: orig || dest, pre: true };
   const aero = pick(o, ["type", "aeronave", "modelo", "aircraft", "tipo_aeronave", "icao_type"]) || get(/aircraft|aeronave|modelo|equip/, /(code|model|type|text|name)$/);
   return {
     t, rot, ts: ts(t),
@@ -189,7 +194,7 @@ function item(o, tipo) {
     cia: nomeCia(pick(o, ["cia", "companhia", "airline", "operador", "operator"])),
     reg: pick(o, ["matricula", "registro", "registration", "prefixo", "reg", "tail"]),
     aero: nomeAero(typeof aero === "string" ? aero : null),
-    rota: city ? cidade(city) : (orig && dest ? orig + " → " + dest : (orig || dest)),
+    rota: rotaTxt.t, rotaPre: rotaTxt.pre,
     rwy: pick(o, ["cabeceira", "pista", "runway", "rwy"]) || get(/cabeceira|pista|runway|rwy/),
     status: typeof st === "string" ? st : null
   };
@@ -231,8 +236,10 @@ function separa(d) {
    Tenta a 1ª fonte; se falhar, a 2ª; se falhar, mostra o código em um selo. Lembra qual funcionou. */
 const FONTES = [c => `https://images.kiwi.com/airlines/64x64/${c}.png`, c => `https://pics.avs.io/64/64/${c}.png`];
 const LOGO = {};
+const LOGO_ALIAS = { JJ: "LA", TAM: "LA", LAN: "LA", LP: "LA", XL: "LA", "4M": "LA", LU: "LA", JA: "LA" }; // marcas antigas da LATAM -> logo atual
 function logo(cod) {
-  const c = String(cod || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  let c = String(cod || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  c = LOGO_ALIAS[c] || c;
   if (!c) return '<span class="lg lg0">✈</span>';
   const i = LOGO[c] ?? 0;
   if (i >= FONTES.length) return `<span class="lg lg0">${esc(c)}</span>`;
@@ -250,7 +257,7 @@ function linha(o, cls, rotulo) {
   const x = item(o, cls);
   const rot = rotulo === "previsto" && x.rot ? x.rot : rotulo;
   const titulo = [x.voo, x.cia].filter(Boolean).join(" · ") || x.reg || "Aeronave";
-  const trecho = x.rota ? (cls === "pou" ? "de " : "para ") + x.rota : null;
+  const trecho = x.rota ? (x.rotaPre ? (cls === "pou" ? "de " : "para ") : "") + x.rota : null;
   const sub = [x.reg, x.aero].filter(Boolean).join(" · ");
   const st = traduz(x.status);
   const atr = /atrasad|cancel|desvi/i.test(st) ? " atr" : "";
