@@ -105,6 +105,18 @@ header nav .dd-menu a:last-child{border-bottom:0}
   header nav .dd.open .dd-btn::after{transform:rotate(225deg)}
 }
 .vazio-img{grid-column:1/-1}.constr{display:block;width:100%;max-width:720px;height:auto;margin:0 auto;border-radius:18px;border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+
+.mat-card{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0;max-width:900px;margin:10px auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .25s,transform .3s ease,box-shadow .3s ease}
+.mat-card:hover,.mat-card:focus-visible{border-color:var(--ac);transform:scale(1.045);box-shadow:0 22px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,176,32,.35);outline:0}
+.mat-card:active{transform:scale(1.02)}
+.mat-card .foto{overflow:hidden;min-height:210px}
+.mat-card .foto img{transition:transform .45s ease}
+.mat-card:hover .foto img,.mat-card:focus-visible .foto img{transform:scale(1.1)}
+@media(prefers-reduced-motion:reduce){.mat-card,.mat-card .foto img{transition:none}.mat-card:hover,.mat-card:focus-visible{transform:none}.mat-card:hover .foto img{transform:none}}
+.mat-card .foto img{width:100%;height:100%;min-height:210px;object-fit:cover;display:block}
+.mat-card .txt2{padding:22px}.mat-card h3{font-size:1.25rem;line-height:1.25;margin:10px 0 8px}.mat-card p{color:var(--mut);font-size:.95rem}
+.kicker{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1a1200;background:var(--ac);padding:4px 11px;border-radius:99px}
+@media(max-width:640px){.mat-card{grid-template-columns:1fr}.mat-card .foto,.mat-card .foto img{min-height:0}.mat-card .foto img{aspect-ratio:16/9;height:auto}}
 </style>
 </head>
 <body>
@@ -118,45 +130,12 @@ header nav .dd-menu a:last-child{border-bottom:0}
   <h1>Aviões e arte por <span>Bruno Rhavani</span></h1>
 </div>
 <section><div class="wrap">
-  <div class="galeria" id="galeria"><div class="vazio-img"><svg class="constr" viewBox="0 0 720 400" role="img" aria-label="Página em construção">
-  <defs>
-    <pattern id="haz" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="28" fill="#ffb020"/><rect x="14" width="14" height="28" fill="#1a1200"/></pattern>
-    <clipPath id="cpc"><rect width="720" height="400" rx="18"/></clipPath>
-    <linearGradient id="skyc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13213f"/><stop offset="1" stop-color="#0b1328"/></linearGradient>
-  </defs>
-  <g clip-path="url(#cpc)">
-    <rect width="720" height="400" fill="url(#skyc)"/>
-    <rect y="0" width="720" height="26" fill="url(#haz)"/>
-    <rect y="374" width="720" height="26" fill="url(#haz)"/>
-    <rect y="326" width="720" height="48" fill="#172746"/>
-    <line x1="0" y1="350" x2="720" y2="350" stroke="#e8eefc" stroke-width="3" stroke-dasharray="34 22" opacity=".55"/>
-    <path d="M500 232 C 470 190 430 150 380 118" fill="none" stroke="#e8eefc" stroke-width="3" stroke-dasharray="3 12" stroke-linecap="round" opacity=".35"/>
-    <g transform="translate(600 118) rotate(38)">
-      <path d="M10 -14 L86 30 L86 44 L10 20Z M-10 -14 L-86 30 L-86 44 L-10 20Z" fill="#cfd9f1"/>
-      <path d="M10 40 L36 58 L36 66 L10 54Z M-10 40 L-36 58 L-36 66 L-10 54Z" fill="#cfd9f1"/>
-      <path d="M0 -64 C9 -64 11 -42 11 -22 L11 42 L0 60 L-11 42 L-11 -22 C-11 -42 -9 -64 0 -64Z" fill="#e8eefc"/>
-      <rect x="-4" y="-50" width="8" height="12" rx="3" fill="#8fa3c7"/>
-    </g>
-    <g>
-      <rect x="132" y="104" width="456" height="184" rx="16" fill="#1a1200" stroke="#ffb020" stroke-width="6"/>
-      <rect x="148" y="120" width="424" height="152" rx="8" fill="none" stroke="#ffb020" stroke-width="2" stroke-dasharray="10 8" opacity=".6"/>
-      <rect x="200" y="288" width="16" height="62" fill="#8fa3c7"/><rect x="504" y="288" width="16" height="62" fill="#8fa3c7"/>
-      <text x="360" y="190" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',Impact,sans-serif" font-weight="800" font-size="50" letter-spacing="3" fill="#ffb020">PÁGINA EM</text>
-      <text x="360" y="252" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',Impact,sans-serif" font-weight="800" font-size="66" letter-spacing="3" fill="#ffffff">CONSTRUÇÃO</text>
-    </g>
-    <g transform="translate(72 348)">
-      <rect x="-44" y="-2" width="88" height="12" rx="3" fill="#2a3b60"/>
-      <polygon points="-34,-2 34,-2 17,-84 -17,-84" fill="#ff7a18"/>
-      <polygon points="-27,-30 27,-30 22,-50 -22,-50" fill="#ffffff"/>
-    </g>
-    <g transform="translate(648 348)">
-      <rect x="-44" y="-2" width="88" height="12" rx="3" fill="#2a3b60"/>
-      <polygon points="-34,-2 34,-2 17,-84 -17,-84" fill="#ff7a18"/>
-      <polygon points="-27,-30 27,-30 22,-50 -22,-50" fill="#ffffff"/>
-    </g>
-  </g>
-</svg></div></div>
+  <a class="mat-card" href="/pt-osr-rei-do-gado">
+    <div class="foto"><img src="pt-osr-capa.jpg" alt="" loading="lazy"></div>
+    <div class="txt2"><span class="kicker">Matéria</span><h3>A participação do PT-OSR na novela “O Rei do Gado”</h3><p>O King Air que apareceu na novela de 1996 e, anos depois, protagonizou um acidente real no Recife. Uma curiosidade da aviação nas artes.</p></div>
+  </a>
 </div></section>
+<section><div class="wrap"><div class="galeria" id="galeria"></div></div></section>
 </main>
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Imagem ampliada"><img id="lbImg" alt=""><p id="lbTxt"></p></div>
 
