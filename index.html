@@ -753,8 +753,8 @@ loadLives(); setInterval(loadLives,60000);
     const d=dados[aba], nome=aba==="pou"?"pouso":"decolagem", rotUlt=aba==="pou"?"pousou":"decolou";
     const ult=d.ult[0], prox=d.prox[0];
     lista.innerHTML=
-      `<div class="ax-sub">Último ${nome}</div>`+(ult?linha(ult,aba,rotUlt):`<div class="ax-vazio">Nenhum${aba==="pou"?"":"a"} ${nome} registrad${aba==="pou"?"o":"a"} ainda.</div>`)+
-      `<div class="ax-sub">Próximo ${nome}</div>`+(prox?linha(prox,aba,"previsto"):`<div class="ax-vazio">Sem ${aba==="pou"?"pousos previstos":"decolagens previstas"} no momento.</div>`);
+      `<div class="ax-sub">${aba==="pou"?"Último":"Última"} ${nome}</div>`+(ult?linha(ult,aba,rotUlt):`<div class="ax-vazio">Nenhum${aba==="pou"?"":"a"} ${nome} registrad${aba==="pou"?"o":"a"} ainda.</div>`)+
+      `<div class="ax-sub">${aba==="pou"?"Próximo":"Próxima"} ${nome}</div>`+(prox?linha(prox,aba,"previsto"):`<div class="ax-vazio">Sem ${aba==="pou"?"pousos previstos":"decolagens previstas"} no momento.</div>`);
     ligaLogos(lista);
   }
   document.querySelectorAll(".ax-tabs button").forEach(b=>b.addEventListener("click",()=>{
