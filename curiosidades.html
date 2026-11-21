@@ -100,6 +100,12 @@ header nav .dd-menu a:last-child{border-bottom:0}
   header nav .dd.open .dd-menu{display:block}
   header nav .dd.open .dd-btn::after{transform:rotate(225deg)}
 }
+.mat-card{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0;max-width:900px;margin:10px auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .15s,transform .15s}
+.mat-card:hover{border-color:var(--ac);transform:translateY(-3px)}
+.mat-card img{width:100%;height:100%;min-height:210px;object-fit:cover;display:block}
+.mat-card div{padding:22px}.mat-card h3{font-size:1.25rem;line-height:1.25;margin:10px 0 8px}.mat-card p{color:var(--mut);font-size:.95rem}
+.kicker{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1a1200;background:var(--ac);padding:4px 11px;border-radius:99px}
+@media(max-width:640px){.mat-card{grid-template-columns:1fr}.mat-card img{min-height:0;aspect-ratio:16/9;height:auto}}
 </style>
 </head>
 <body>
@@ -112,6 +118,13 @@ header nav .dd-menu a:last-child{border-bottom:0}
 <div class="wrap hero">
   <h1><span>Curiosidades</span> da aviação</h1>
 </div>
+
+<section><div class="wrap">
+  <a class="mat-card" href="/cabeceira-36">
+    <img src="cabeceira36-747.jpg" alt="" loading="lazy">
+    <div><span class="kicker">Matéria</span><h3>Cabeceira 36: o espetáculo da aviação que faz a alegria dos spotters no Recife</h3><p>Quando o vento muda, o cenário também muda. Entenda por que esse é um dos momentos mais aguardados do ano.</p></div>
+  </a>
+</div></section>
 </main>
 
 <footer><div class="wrap">Copyright © 2022 - <span id="ano">2026</span> Papa Charlie Golf. Todos os direitos reservados. · <a href="/privacidade" style="text-decoration:underline">Política de Privacidade</a></div></footer>
