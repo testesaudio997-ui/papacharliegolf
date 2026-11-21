@@ -47,12 +47,31 @@ h2.pou::before{background:var(--grn)}h2.dec::before{background:var(--blu)}
 .side em.atr{background:#4a1c1c;color:#ffb4b4}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--mut);text-align:center;font-size:.92rem}
 footer{border-top:1px solid var(--line);padding:26px 0;margin-top:20px;color:var(--mut);font-size:.85rem;text-align:center}
+
+/* ====== MENU NO CELULAR ====== */
+.menu-btn{display:none;margin-left:10px;flex:none;width:42px;height:42px;border:1px solid var(--line);background:var(--card);border-radius:10px;color:var(--tx);cursor:pointer;align-items:center;justify-content:center;padding:0}
+.menu-btn i,.menu-btn i::before,.menu-btn i::after{display:block;width:18px;height:2px;border-radius:2px;background:currentColor;transition:transform .25s,opacity .2s,background .2s}
+.menu-btn i{position:relative}.menu-btn i::before,.menu-btn i::after{content:"";position:absolute;left:0}
+.menu-btn i::before{top:-6px}.menu-btn i::after{top:6px}
+header.open .menu-btn i{background:transparent}
+header.open .menu-btn i::before{transform:translateY(6px) rotate(45deg)}
+header.open .menu-btn i::after{transform:translateY(-6px) rotate(-45deg)}
+.menu-btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media(max-width:720px){
+  .menu-btn{display:inline-flex}
+  header .hora{margin-left:auto;font-size:.8rem}
+  header nav{display:flex;flex-direction:column;align-items:stretch;position:absolute;top:100%;left:0;right:0;margin:0;padding:6px 20px 12px;background:rgba(7,13,26,.98);border-bottom:1px solid var(--line);box-shadow:0 18px 30px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .2s,transform .2s,visibility .2s}
+  header.open nav{opacity:1;visibility:visible;transform:none}
+  header nav a{margin:0;padding:15px 4px;border-bottom:1px solid var(--line);font-size:1rem}
+  header nav a:last-child{border-bottom:0}
+}
+@media(max-width:400px){.logo{gap:8px}.logo img{width:36px;height:36px}.logo span{font-size:.7rem}header .hora{font-size:.72rem}.menu-btn{margin-left:8px;width:38px;height:38px}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
   <a href="/" class="logo"><img src="logo.png" alt="Papa Charlie Golf TV" width="44" height="44"><span>PAPA CHARLIE GOLF TV</span></a>
-  <nav><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div>
+  <nav id="menu"><a href="/#aovivo">Direto pra pista ao vivo!</a><a href="/#videos">Vídeos</a><a href="/movimentos" class="on">Movimentos</a><a href="/#sobre">Sobre</a><a href="/#parceiros">Parceiros</a></nav><div class="hora" title="Hora em Recife">🕐 <span id="clock">--:--:--</span></div><button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><i></i></button>
 </div></header>
 
 <main class="wrap">
@@ -332,6 +351,18 @@ async function carregar() {
 const relogio = () => { $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { timeZone: CONFIG.fuso }); };
 relogio(); setInterval(relogio, 1000);
 carregar(); setInterval(carregar, CONFIG.atualizarMs);
+</script>
+<script>
+/* menu do celular */
+(function(){
+  const h=document.querySelector("header"), b=document.getElementById("menuBtn"); if(!h||!b) return;
+  const set=o=>{h.classList.toggle("open",o); b.setAttribute("aria-expanded",o); b.setAttribute("aria-label",o?"Fechar menu":"Abrir menu");};
+  b.addEventListener("click",e=>{e.stopPropagation(); set(!h.classList.contains("open"));});
+  h.querySelectorAll("nav a").forEach(a=>a.addEventListener("click",()=>set(false)));
+  document.addEventListener("click",e=>{ if(!h.contains(e.target)) set(false); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") set(false); });
+  matchMedia("(min-width:721px)").addEventListener("change",e=>{ if(e.matches) set(false); });
+})();
 </script>
 </body>
 </html>
