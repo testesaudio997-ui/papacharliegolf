@@ -130,7 +130,7 @@ async function live(env) {
 }
 
 /* ================= VÍDEOS ================= */
-// Devolve { videos: [4 últimos vídeos], streams: [4 últimas lives] }.
+// Devolve { videos: [4 últimos vídeos], streams: [4 últimas lives ENCERRADAS] } (a live no ar agora aparece só na seção "Direto pra pista").
 // Com YOUTUBE_API_KEY: lê a lista de uploads do canal e separa lives (têm liveStreamingDetails) de vídeos comuns.
 // Sem chave: usa o feed RSS e confere cada página para saber se é uma live (menos confiável).
 const N = 4;
@@ -156,8 +156,8 @@ async function canalViaApi(key) {
         const ld = v.liveStreamingDetails;
         if (ld) {
           const st = v.snippet.liveBroadcastContent;
-          if (st === "upcoming") continue; // live agendada, ainda não começou
-          strs.push({ id, title: v.snippet.title, date: ld.actualStartTime || v.snippet.publishedAt, live: st === "live" });
+          if (st === "upcoming" || st === "live") continue; // agendada ou no ar agora: fica de fora (só lives encerradas)
+          strs.push({ id, title: v.snippet.title, date: ld.actualStartTime || v.snippet.publishedAt, live: false });
         } else {
           if (isoSeg(v.contentDetails.duration) <= 60) continue; // ignora Shorts
           vids.push({ id, title: v.snippet.title, date: v.snippet.publishedAt });
@@ -183,12 +183,13 @@ async function canalViaRss() {
     try {
       const r = await ft(`https://www.youtube.com/watch?v=${v.id}`, { headers: UA }, 6000);
       const html = await r.text();
-      return { ...v, live: /"isLiveContent":\s*true/.test(html) };
-    } catch { return { ...v, live: false }; }
+      return { ...v, live: /"isLiveContent":\s*true/.test(html), agora: /"isLiveNow":\s*true/.test(html) };
+    } catch { return { ...v, live: false, agora: false }; }
   }));
   return {
-    videos: marcados.filter(v => !v.live).slice(0, N),
-    streams: marcados.filter(v => v.live).slice(0, N)
+    videos: marcados.filter(v => !v.live).slice(0, N).map(({ agora, ...v }) => v),
+    // só lives encerradas: tira as que estão no ar agora
+    streams: marcados.filter(v => v.live && !v.agora).slice(0, N).map(({ agora, ...v }) => ({ ...v, live: false }))
   };
 }
 
