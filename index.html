@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="logo.png">
+<script>document.documentElement.classList.add('js')</script>
 <title>Papa Charlie Golf TV – Aeroporto do Recife ao vivo</title>
 <meta name="description" content="Acompanhe ao vivo os pousos e decolagens do Aeroporto Internacional do Recife (SBRF) no canal Papa Charlie Golf TV.">
 <meta property="og:title" content="Papa Charlie Golf TV">
@@ -115,6 +116,16 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mut);font-siz
 @media(prefers-reduced-motion:reduce){.slide{transition:none}.dot,.tag i,.nav-live i{animation:none}}
 @media(max-width:720px){nav{display:none}.about{grid-template-columns:1fr}}
 .logo span{white-space:nowrap;color:var(--tx)}@media(max-width:520px){.logo span{font-size:.8rem}}
+
+/* ====== EFEITO DE ENTRADA AO ROLAR (estilo Apple) ====== */
+.js .rv:not(.in),.js .rv-group:not(.in)>*{opacity:0}
+.js .rv.in,.js .rv-group.in>*{animation:rvUp 1s cubic-bezier(.16,1,.3,1) backwards;animation-delay:var(--d,0s)}
+.js .rv-scale.in{animation-name:rvScale;animation-duration:1.2s}
+.js .rv-group>:nth-child(2){--d:.1s}.js .rv-group>:nth-child(3){--d:.2s}.js .rv-group>:nth-child(4){--d:.3s}
+.js .rv-group>:nth-child(5){--d:.4s}.js .rv-group>:nth-child(6){--d:.5s}.js .rv-group>:nth-child(n+7){--d:.6s}
+@keyframes rvUp{from{opacity:0;transform:translateY(44px)}}
+@keyframes rvScale{from{opacity:0;transform:scale(.93) translateY(34px)}}
+@media(prefers-reduced-motion:reduce){.js .rv:not(.in),.js .rv-group:not(.in)>*{opacity:1}.js .rv.in,.js .rv-group.in>*{animation:none}}
 </style>
 </head>
 <body>
@@ -330,6 +341,31 @@ loadLives(); setInterval(loadLives,60000);
     const set = (id,v) => { $(id).textContent = v || "--"; };
     set("stSubs", d.inscritos); set("stViews", d.visualizacoes); set("stVids", d.videos);
   } catch(e) { /* mantém "--" se a leitura falhar */ }
+})();
+
+/* ====== EFEITO DE ENTRADA AO ROLAR ====== */
+(function(){
+  const tag=(sel,cls,step)=>document.querySelectorAll(sel).forEach((el,i)=>{
+    el.classList.add(cls||"rv");
+    if(step) el.style.setProperty("--d",(i*step)+"s");
+  });
+  // Topo: entra em sequência ao carregar a página
+  tag(".hero h1.slogan span","rv",.15);
+  const entra=(sel,cls,d)=>{const el=document.querySelector(sel); el.classList.add("rv"); if(cls) el.classList.add(cls); el.style.setProperty("--d",d+"s");};
+  entra(".hero > p",null,.35);
+  entra("#stage","rv-scale",.5);
+  entra(".btns",null,.7);
+  // Resto da página: cada bloco aparece quando chega na tela
+  document.querySelectorAll("section h2").forEach(h=>{ if(!h.closest(".about")) h.classList.add("rv"); });
+  tag(".grid, .live-grid, .info, .stats-grid, .parc-grid, .social","rv-group");
+  tag(".more"); tag(".about > div"); tag(".support"); tag("footer .wrap");
+
+  const alvos=document.querySelectorAll(".rv, .rv-group");
+  if(!("IntersectionObserver" in window)){ alvos.forEach(e=>e.classList.add("in")); return; }
+  const io=new IntersectionObserver((lista)=>{
+    lista.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add("in"); io.unobserve(x.target); } });
+  },{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+  alvos.forEach(e=>io.observe(e));
 })();
 </script>
 </body>
